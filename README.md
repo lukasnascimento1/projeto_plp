@@ -1,70 +1,117 @@
-# Projeto: Construção de Grafo a partir de JSON
+# Sudoku em Haskell
 
-Este projeto tem como objetivo construir e manipular grafos utilizando **Python** e **NetworkX**, a partir de um arquivo JSON contendo vértices e arestas.
+Um projeto de Sudoku desenvolvido em Haskell, contendo geração de
+tabuleiros, interação por terminal, verificação de solução e testes
+automatizados.
 
-## 🚀 Funcionalidades
+------------------------------------------------------------------------
 
-- Leitura de um arquivo JSON para criação de grafo.
-- Suporte a **dígrafos** (grafos direcionados).
-- Cálculo de menor distância entre nós usando **Dijkstra**.
-- Estrutura organizada em módulos.
-- Validação dos dados de entrada.
+## 🎯 Objetivo
 
-## 🗂 Estrutura do Projeto
+Implementar um jogo completo de Sudoku em Haskell com:
 
-```
-projeto/
-│── src/
-│   ├── main.py
-│   ├── graph_builder.py
-│   ├── util/
-│   │   └── validator.py
-│── data/
-│   └── graph.json
-│── README.md
-```
+-   Dois modos de jogo (fácil e difícil)\
+-   Geração automática de tabuleiros\
+-   Seleção e manipulação de células (A1, B3, etc.)\
+-   Preencher e remover números\
+-   Validação de jogadas\
+-   Verificação automática da solução\
+-   Testes unitários e de propriedade
 
-## 📝 Exemplo de JSON
+------------------------------------------------------------------------
 
-```json
-{
-  "edges": [
-    ["A", "B", 5],
-    ["B", "C", 3],
-    ["A", "C", 10]
-  ]
-}
-```
+## 🧱 Estrutura do Projeto
 
-## ▶️ Executando o projeto
+    /src
+      Main.hs
+      Board.hs
+      Generator.hs
+      GameLoop.hs
+      Validation.hs
+      UI.hs
 
-Use:
+    /tests
+      BoardTests.hs
+      ValidationTests.hs
+      GeneratorTests.hs
 
-```bash
-python3 src/main.py
-```
+    README.md
+    stack.yaml ou cabal.project
 
-Certifique-se de que o arquivo `graph.json` está na pasta `data/`.
+------------------------------------------------------------------------
 
-## 🧪 Testes
+## 🚀 Como Executar
 
-Execute:
+### 1. Clonar o repositório
 
-```bash
-python3 -m unittest
-```
+    git clone <url>
+    cd sudoku-haskell
 
-## 📦 Requisitos
+### 2. Executar com Stack
 
-- Python 3.8+
-- NetworkX
+    stack run
 
-Instale dependências:
+Ou compilar:
 
-```bash
-pip install networkx
-```
+    stack build
 
----
+### 3. Executar testes
 
-Caso queira personalizar este README, é só pedir! 😊
+    stack test
+
+------------------------------------------------------------------------
+
+## 📌 Funcionalidades
+
+### ✔ Geração de tabuleiro
+
+-   **Fácil**: remove menos números, múltiplos caminhos válidos\
+-   **Difícil**: garante unicidade de solução e remoção mais agressiva
+
+### ✔ Interação
+
+-   Seleção de células via rótulos (A1, B3...)\
+-   Preencher número\
+-   Remover número\
+-   Exibir tabuleiro
+
+### ✔ Validação
+
+-   Checagem de linha, coluna e subgrade\
+-   Função `isValidMove`\
+-   Função `checkSolution`
+
+### ✔ Interface
+
+-   Modo texto simples e intuitivo via terminal\
+-   Menu inicial para escolha do modo de jogo
+
+### ✔ Testes
+
+-   Testes unitários com HUnit\
+-   Testes de propriedade com QuickCheck
+
+------------------------------------------------------------------------
+
+## 🛠 Tecnologias
+
+-   **Haskell**
+-   **Stack ou Cabal**
+-   **HUnit**
+-   **QuickCheck**
+
+------------------------------------------------------------------------
+
+## 👥 Equipe (exemplo)
+
+-   Alana\
+-   Lorena\
+-   Lukas\
+-   Julia\
+-   Leticia
+
+------------------------------------------------------------------------
+
+## 📄 Licença
+
+MIT License.
