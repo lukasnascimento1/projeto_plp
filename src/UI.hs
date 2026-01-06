@@ -193,18 +193,6 @@ module UI where
     delete :: Int -> Int -> B.Board -> Either B.BoardError B.Board
     delete row col board = B.deleteCharFromBoard row col board
 
-    -- transforma um Char em Int
-    -- faz a verificação se o elemento de entrada for de digito único
-    charToInt :: Char -> Maybe Int
-    charToInt c
-        | isDigit c = Just (digitToInt c)
-        | otherwise = Nothing
-
-    -- transgforma uma String ([Char]) de digito único em um tipo Char
-    stringToChar :: String -> Maybe Char
-    stringToChar [c] = Just c
-    stringToChar _   = Nothing
-
     -- Valida o número de entrada para estar dentro do escopo do tabuleiro 1-9
     isValidNumber :: String -> Bool
     isValidNumber s =
