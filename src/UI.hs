@@ -164,19 +164,29 @@ module UI where
             return board
         else do
             case coor of
-                    ([l, d]) ->
-                        case mapLetterToNumber l of
-                            Just row ->
-                                let col = digitToInt d
-                                in case delete (row - 1) (col - 1) board of
-                                    Left erro -> do
-                                        print erro
-                                        return board
-                                    Right newBoard ->
-                                        return newBoard
-                            Nothing -> do
-                                putStrLn "Coordenada inválida"
-                                return board
+                [l, d] ->
+                    case mapLetterToNumber l of
+                        Just row -> do
+                            let baseCol = digitToInt d - 1
+                                col
+                                    | baseCol >= 6 = baseCol + 2
+                                    | baseCol >= 3 = baseCol + 1
+                                    | otherwise    = baseCol
+
+                            case delete row col board of
+                                Left erro -> do
+                                    print erro
+                                    return board
+                                Right newBoard ->
+                                    return newBoard
+
+                        Nothing -> do
+                            putStrLn "Coordenada inválida"
+                            return board
+
+                _ -> do
+                    putStrLn "Entrada inválida"
+                    return board
     
         
     -- Função auxiliar de delete
