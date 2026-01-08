@@ -1,6 +1,7 @@
 module Generator where
 
 import Board
+import Board (insertCharOnBoard)
 
 --pegar os elementos de uma coluna ignorando as divisórias
 --permite pegar uma coluna so com pipes (vou ajeitar depois)
@@ -36,6 +37,23 @@ isPositionValid n row column board =
         numberNotInBox = not (n `elem` (getBox row column board))
     in
         numberNotInRow && numberNotInColumn && numberNotInBox
+
+
+--achar posicoes vazias 
+findEmptyPositions :: Board -> [(Int, Int)]
+findEmptyPositions board = [(r, c) | r <- [0 .. 10], c <- [0 .. 10], validateCoordenates r c, (board !! r !! c) == 'x']
+   
+solve :: Board -> [Char] -> [Board]
+solve board nums =
+    let emptyPositions = findEmptyPositions board
+    in 
+        if null emptyPositions then [board] --ja ta resolvido 
+        else
+            let (r, c) = head emptyPositions 
+            in [result | n <- nums, isPositionValid n r c board, 
+            Right newBoard <- [insertCharOnBoard n r c board], 
+            result <- solve newBoard nums]
+
 
 
 
