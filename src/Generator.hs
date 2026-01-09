@@ -1,6 +1,6 @@
 module Generator where
 
-import Board (insertCharOnBoard, Board, emptyBoard, getRowFromBoard, validateCoordenates)
+import Board (insertCharOnBoard, Board, emptyBoard, getRowFromBoard, validateCoordenates, deleteCharFromBoard)
 import System.Random (randomRIO)
 
 
@@ -45,17 +45,27 @@ findEmptyPositions :: Board -> [(Int, Int)]
 findEmptyPositions board = [(r, c) | r <- [0 .. 10], c <- [0 .. 10], validateCoordenates r c, (board !! r !! c) == 'x']
    
 
---solve recursivo pra fazer o jogo e depois a função de gerar poder remover os números de acordo com a dificuldade
-solve :: Board -> [Char] -> [Board]
-solve board nums =
+--solve pra fazer o jogo e depois a função de gerar poder remover os números de acordo com a dificuldade
+solve :: Board -> IO[Board]
+solve board = do 
     let emptyPositions = findEmptyPositions board
-    in 
-        if null emptyPositions then [board] --ja ta resolvido 
-        else
-            let (r, c) = head emptyPositions 
-            in [result | n <- nums, isPositionValid n r c board, 
-            Right newBoard <- [insertCharOnBoard n r c board], 
-            result <- solve newBoard nums]
+    if null emptyPositions then return [board] --ja ta resolvido 
+    else do
+        let (row, column) = head emptyPositions 
+        nums <- shuffleNumbers ['1' .. '9']
+        auxTryNumbers board row column nums       
+
+auxTryNumbers :: Board -> Int -> Int -> [Char] -> IO[Board]
+auxTryNumbers _ _ _ [] = return []
+auxTryNumbers board row column (x:xs) = do
+    if isPositionValid x row column board
+        then do 
+            let(Right newBoard) = insertCharOnBoard x row column board
+            result <- solve newBoard
+            if null result
+                then auxTryNumbers board row column xs 
+                else return result 
+        else auxTryNumbers board row column xs 
 
 
 --função pra poder gerar a aleatoriedade
@@ -72,10 +82,39 @@ shuffleNumbers l = do
 --gerando o tabuleiro cheio pra remover os números depois
 generateFilledBoard :: IO Board
 generateFilledBoard = do
-    shuffledNumbers <- shuffleNumbers ['1' .. '9']
-    let solution = solve emptyBoard shuffledNumbers
+    solution <- solve emptyBoard 
     return (head solution) 
 
 
+-- remove a quantidade de números passada como parâmetro
+removeNumbersToGenerateGame :: Int -> Board -> IO Board
+removeNumbersToGenerateGame 0 board = return board 
+removeNumbersToGenerateGame n board = do
+    let valid = [0, 1, 2, 4, 5, 6, 8, 9, 10] --não pegar as divisões
+    iRow <- randomRIO(0, length valid - 1)
+    iColumn <- randomRIO(0, length valid - 1)
+
+    let row = valid !! iRow
+    let column = valid !! iColumn 
+
+    if (board !! row !! column) `elem` ['1' .. '9']
+        then do 
+            let (Right newBoard) = deleteCharFromBoard row column board
+            removeNumbersToGenerateGame (n - 1) newBoard
+        else 
+            removeNumbersToGenerateGame n board  
+
+
+generateEasy :: IO Board
+generateEasy = do
+    fullGame <- generateFilledBoard
+    removeNumbersToGenerateGame 35 fullGame 
+
+generateHard :: IO Board
+generateHard = do
+    fullGame <- generateFilledBoard
+    removeNumbersToGenerateGame 60 fullGame 
+
+    
 
 

@@ -64,9 +64,12 @@ module UI where
     startGame = do
         putStrLn "Escolha o modo de jogo:\n\t[1] Quero um modo mais confortável\n\t[2] Me desafie!"
         mode <- getLine
-        putStrLn "teste"
-        tabuleiro <- G.generateFilledBoard
-        --putStrLn "Muito bem..." 
+        --putStrLn "teste"
+        tabuleiro <- case mode of 
+            "1" -> G.generateEasy
+            "2" -> G.generateHard 
+            _ -> G.generateEasy  
+        putStrLn "Muito bem..." 
         threadDelay 500000
         putStrLn "Vamos lá!"
         --actionInGame B.tabuleiro -- (Acho que aqui deveria ser usado como parametro o tabuleiro já com modo)
