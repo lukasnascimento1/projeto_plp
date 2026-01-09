@@ -9,6 +9,7 @@ module UI where
     import Data.Char (digitToInt, isDigit, toLower)
     import Control.Concurrent (threadDelay)
     import qualified Board as B
+    import qualified Generator as G 
 
     type Cell = String --[Char]
 
@@ -63,10 +64,13 @@ module UI where
     startGame = do
         putStrLn "Escolha o modo de jogo:\n\t[1] Quero um modo mais confortável\n\t[2] Me desafie!"
         mode <- getLine
-        putStrLn "Muito bem..." 
+        putStrLn "teste"
+        tabuleiro <- G.generateFilledBoard
+        --putStrLn "Muito bem..." 
         threadDelay 500000
         putStrLn "Vamos lá!"
-        actionInGame B.tabuleiro -- (Acho que aqui deveria ser usado como parametro o tabuleiro já com modo)
+        --actionInGame B.tabuleiro -- (Acho que aqui deveria ser usado como parametro o tabuleiro já com modo)
+        actionInGame tabuleiro 
 
     -- Autoexplicativo
     clearScreen :: IO ()

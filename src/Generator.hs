@@ -1,7 +1,8 @@
 module Generator where
 
-import Board
-import Board (insertCharOnBoard)
+import Board (insertCharOnBoard, Board, emptyBoard, getRowFromBoard, validateCoordenates)
+import System.Random (randomRIO)
+
 
 --pegar os elementos de uma coluna ignorando as divisórias
 --permite pegar uma coluna so com pipes (vou ajeitar depois)
@@ -43,6 +44,8 @@ isPositionValid n row column board =
 findEmptyPositions :: Board -> [(Int, Int)]
 findEmptyPositions board = [(r, c) | r <- [0 .. 10], c <- [0 .. 10], validateCoordenates r c, (board !! r !! c) == 'x']
    
+
+--solve recursivo pra fazer o jogo e depois a função de gerar poder remover os números de acordo com a dificuldade
 solve :: Board -> [Char] -> [Board]
 solve board nums =
     let emptyPositions = findEmptyPositions board
@@ -55,6 +58,23 @@ solve board nums =
             result <- solve newBoard nums]
 
 
+--função pra poder gerar a aleatoriedade
+shuffleNumbers :: [Char] -> IO[Char]
+shuffleNumbers [] = return []
+shuffleNumbers l = do
+    i <- randomRIO(0, length l - 1)
+    let num = l !! i
+    let restOfList = take i l ++ drop (i + 1) l 
+    rest <- shuffleNumbers restOfList
+    return (num : rest) 
+
+
+--gerando o tabuleiro cheio pra remover os números depois
+generateFilledBoard :: IO Board
+generateFilledBoard = do
+    shuffledNumbers <- shuffleNumbers ['1' .. '9']
+    let solution = solve emptyBoard shuffledNumbers
+    return (head solution) 
 
 
 
