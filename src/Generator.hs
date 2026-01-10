@@ -2,6 +2,8 @@ module Generator where
 
 import Board (insertCharOnBoard, Board, emptyBoard, getRowFromBoard, validateCoordenates, deleteCharFromBoard)
 import System.Random (randomRIO)
+import Control.Monad (Monad(return))
+import Data.Bool (bool)
 
 
 --pegar os elementos de uma coluna ignorando as divisórias
@@ -42,8 +44,8 @@ isPositionValid n row column board =
 
 --achar posicoes vazias 
 findEmptyPositions :: Board -> [(Int, Int)]
-findEmptyPositions board = [(r, c) | r <- [0 .. 10], c <- [0 .. 10], validateCoordenates r c, (board !! r !! c) == 'x']
-   
+findEmptyPositions board = [(r, c) | r <- valid, c <- valid, validateCoordenates r c, (board !! r !! c) == 'x']
+    where valid = [0, 1, 2, 4, 5, 6, 8, 9, 10]
 
 --solve pra fazer o jogo e depois a função de gerar poder remover os números de acordo com a dificuldade
 solve :: Board -> IO[Board]
@@ -52,7 +54,7 @@ solve board = do
     if null emptyPositions then return [board] --ja ta resolvido 
     else do
         let (row, column) = head emptyPositions 
-        nums <- shuffleNumbers ['1' .. '9']
+        nums <- shuffleList ['1' .. '9']
         auxTryNumbers board row column nums       
 
 auxTryNumbers :: Board -> Int -> Int -> [Char] -> IO[Board]
@@ -68,14 +70,26 @@ auxTryNumbers board row column (x:xs) = do
         else auxTryNumbers board row column xs 
 
 
+
+solveWithoutShuffle :: Board -> [Board]
+solveWithoutShuffle board =
+    let emptyPositions = findEmptyPositions board
+    in if null emptyPositions
+        then [board]
+        else let (row, column) = head emptyPositions
+        in [result | n <- ['1' .. '9'], isPositionValid n row column board,
+        let(Right newBoard) = insertCharOnBoard n row column board,
+        result <- solveWithoutShuffle newBoard]
+
+
 --função pra poder gerar a aleatoriedade
-shuffleNumbers :: [Char] -> IO[Char]
-shuffleNumbers [] = return []
-shuffleNumbers l = do
+shuffleList :: [a] -> IO[a]
+shuffleList [] = return []
+shuffleList l = do
     i <- randomRIO(0, length l - 1)
     let num = l !! i
     let restOfList = take i l ++ drop (i + 1) l 
-    rest <- shuffleNumbers restOfList
+    rest <- shuffleList restOfList
     return (num : rest) 
 
 
@@ -86,7 +100,13 @@ generateFilledBoard = do
     return (head solution) 
 
 
--- remove a quantidade de números passada como parâmetro
+checkUniquenessOfSolution :: Board -> IO Bool
+checkUniquenessOfSolution board = do
+    let result = solveWithoutShuffle board
+    return (length(take 2 result) == 1) 
+    
+
+{-- remove a quantidade de números passada como parâmetro
 removeNumbersToGenerateGame :: Int -> Board -> IO Board
 removeNumbersToGenerateGame 0 board = return board 
 removeNumbersToGenerateGame n board = do
@@ -100,9 +120,34 @@ removeNumbersToGenerateGame n board = do
     if (board !! row !! column) `elem` ['1' .. '9']
         then do 
             let (Right newBoard) = deleteCharFromBoard row column board
-            removeNumbersToGenerateGame (n - 1) newBoard
+            unique <- checkUniquenessOfSolution newBoard
+            if(unique)
+                then removeNumbersToGenerateGame (n - 1) newBoard
+                else removeNumbersToGenerateGame n board
         else 
-            removeNumbersToGenerateGame n board  
+            removeNumbersToGenerateGame n board  -}
+
+
+attemptRemove :: Int -> [(Int, Int)] -> Board -> IO Board
+attemptRemove 0 _ board = return board
+attemptRemove _ [] board = return board
+attemptRemove n ((r, c):rest) board = do
+    let(Right tryBoard) = deleteCharFromBoard r c board
+    if(board !! r !! c) `elem` ['1' .. '9']
+        then do 
+            unique <- checkUniquenessOfSolution tryBoard
+            if unique
+                then attemptRemove (n-1) rest tryBoard
+                else attemptRemove n rest board 
+        else attemptRemove n rest board
+
+removeNumbersToGenerateGame :: Int -> Board -> IO Board
+removeNumbersToGenerateGame nums board = do
+    let valid = [0, 1, 2, 4, 5, 6, 8, 9, 10]
+    let coordinates = [(r, c) | r <- valid, c <- valid]
+    shuffledCoordinates <- shuffleList coordinates 
+    attemptRemove nums shuffledCoordinates board
+
 
 
 generateEasy :: IO Board
@@ -113,7 +158,7 @@ generateEasy = do
 generateHard :: IO Board
 generateHard = do
     fullGame <- generateFilledBoard
-    removeNumbersToGenerateGame 60 fullGame 
+    removeNumbersToGenerateGame 56 fullGame 
 
     
 
