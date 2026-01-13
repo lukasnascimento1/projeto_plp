@@ -1,5 +1,5 @@
 {- Construir o tabuleiro do Sudoku
-    é um tabuleiro 9x9 porém tem também o espaço para os pipes 
+    é um tabuleiro 9x9 porém tem também o espaço para os pipes
     que separam os numeros, logo o tabuleiro se torna uma matriz 11x11
     Funções de Inserir e Remover elementos no tabuleiro
 -}
@@ -12,15 +12,15 @@ module Board where
     data BoardError
         = InvalidCoordinates
         deriving (Show, Eq)
-    
+
     coordenadasX = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']
     coordenadasY = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
     linhaVaziaTabuleiro = ['x', 'x', 'x'] ++ ['|'] ++ ['x', 'x', 'x'] ++ ['|'] ++ ['x', 'x', 'x']
     linhaPipe = replicate 11 '-'
-    
+
     tabuleiro = emptyBoard
 
-    
+
     {- emptyBoard retorna uma matriz 11x11 somente com 'x's e as barras de divisao
     usar take e drop para operar os elementos da matriz
     take :: Int -> [a] -> [a]
@@ -28,17 +28,17 @@ module Board where
      essas funcoes descartam os n ultimos/primeiros elementos e retorna o resto
 
     -}
-    emptyBoard :: Board 
+    emptyBoard :: Board
     emptyBoard = (replicate 3 linhaVaziaTabuleiro) ++ [linhaPipe]
                 ++ (replicate 3 linhaVaziaTabuleiro) ++ [linhaPipe]
                 ++ (replicate 3 linhaVaziaTabuleiro)
-    
+
 
     -- indices proibidos na matriz: 3 e 7 pois são as divisorias
 
     -- Adiciona um elemento do tipo Char na linha do tabuleiro
     insertCharOnRow :: Char -> Int -> [Char] -> [Char]
-    insertCharOnRow num ind row = 
+    insertCharOnRow num ind row =
         take ind row ++ [num] ++ drop (ind + 1) row
 
 
@@ -77,11 +77,28 @@ module Board where
 
     -- Imprime o tabuleiro formatado na tela
     printBoard :: Board -> IO ()
-    printBoard = putStrLn . unlines
+    printBoard board = do
+        putStrLn cabeçalho  -- imprime a linha de cabeçalho com os numeros das colunas
+        putStrLn (unlines linhasComRotulos)  -- imprime o tabuleiro com os rotulos das linhas
+        where
+            -- Cria o cabeçalho com os números de 1 a 9 espaçados e separados por espaco a cada 3 numeros
+            cabeçalho = "  " ++ ['1', '2', '3', ' ', '4', '5', '6', ' ', '7', '8', '9']
+
+            -- Adiciona os rótulos de letras (A-I) às linhas do tabuleiro
+            linhasComRotulos = adicionaRotulos coordenadasX board
+
+            -- Função recursiva que associa cada letra a sua respectiva linha
+            adicionaRotulos :: [Char] -> Board -> [String]
+            adicionaRotulos _ [] = []  -- caso base: quando não tem mais linhas, retorna lista vazia
+            adicionaRotulos rotulos (linha:resto)
+                -- Se a linha tem '-', é uma linha separadora: adiciona espaçamento e não consome letra
+                | '-' `elem` linha = ("  " ++ linha) : adicionaRotulos rotulos resto
+                -- Se não é separadora: adiciona a primeira letra + espaço + conteúdo da linha, depois continua com letras restantes
+                | otherwise = (head rotulos : ' ' : linha) : adicionaRotulos (tail rotulos) resto
 
     {-
     Noting:
-        Entao para inserir ou remover um numero no tabuleiro será preciso 
+        Entao para inserir ou remover um numero no tabuleiro será preciso
         usar take e drop
         Essas funcoes irão montar um novo [Char]
     -}

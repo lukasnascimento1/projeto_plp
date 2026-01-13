@@ -8,10 +8,21 @@ module UI where
     import Text.Read (readMaybe)
     import Data.Char (digitToInt, isDigit, toLower)
     import Control.Concurrent (threadDelay)
+    import System.Exit (exitSuccess)
+    import System.IO (hFlush, stdout)
+    import System.Console.Haskeline
     import qualified Board as B
-    import qualified Generator as G 
+    import qualified Generator as G
 
     type Cell = String --[Char]
+
+    -- Função auxiliar para ler entrada com suporte a backspace
+    readUserInput :: String -> IO String
+    readUserInput prompt = runInputT defaultSettings $ do
+        maybeLine <- getInputLine prompt
+        case maybeLine of
+            Nothing -> return ""  -- EOF
+            Just line -> return line
 
     tutorial = "[I] Inserir um número;"
             ++"\n[D] Deletar um número;"
@@ -30,15 +41,15 @@ module UI where
         threadDelay 500000
         putStrLn ""
         putStrLn menuInicial
-        action <- getLine
+        action <- readUserInput "> "
         firstAction action
         menuFinal
-        
+
 
     menuFinal :: IO ()
     menuFinal = do
         putStrLn "Parabéns!!!\nVocê Finalizou um SUDOKU\nDeseja jogar novamente? y/n"
-        r <- getLine
+        r <- readUserInput ""
         case map toLower r of
             "y" -> menu
             _ -> return ()
@@ -55,7 +66,7 @@ module UI where
                 putStrLn about -- descrição do sudoku
                 menu
             "t" -> do
-                putStrLn tutorial -- tutorial das funcoes 
+                putStrLn tutorial -- tutorial das funcoes
                 menu
             _-> startGame
 
@@ -63,17 +74,17 @@ module UI where
     startGame :: IO ()
     startGame = do
         putStrLn "Escolha o modo de jogo:\n\t[1] Quero um modo mais confortável\n\t[2] Me desafie!"
-        mode <- getLine
+        mode <- readUserInput "> "
         --putStrLn "teste"
-        tabuleiro <- case mode of 
+        tabuleiro <- case mode of
             "1" -> G.generateEasy
-            "2" -> G.generateHard 
-            _ -> G.generateEasy  
-        putStrLn "Muito bem..." 
+            "2" -> G.generateHard
+            _ -> G.generateEasy
+        putStrLn "Muito bem..."
         threadDelay 500000
         putStrLn "Vamos lá!"
         --actionInGame B.tabuleiro -- (Acho que aqui deveria ser usado como parametro o tabuleiro já com modo)
-        actionInGame tabuleiro 
+        actionInGame tabuleiro
 
     -- Autoexplicativo
     clearScreen :: IO ()
@@ -81,12 +92,12 @@ module UI where
 
     -- Ações dentro do jogo
     -- Inserir/Deletar numero do tabuleiro
-    -- Falta implementar um modo de saída do game
+    -- Menu com opções de continuar jogando, recomeçar ou sair
     actionInGame :: [[Char]] -> IO ()
-    actionInGame board = do    
+    actionInGame board = do
         B.printBoard board
-        putStrLn "[I] Inserir um número;\n[D] Deletar um número;\n[R] Encerrar este jogo"
-        act <- getLine
+        putStrLn "[I] Inserir um número;\n[D] Deletar um número;\n[R] Encerrar este jogo\n[Q] Sair do programa"
+        act <- readUserInput "> "
         case map toLower act of
             "i" -> do
                 newBoard <- insertFlow board
@@ -98,9 +109,19 @@ module UI where
                 actionInGame newBoard
             "r" -> do
                 putStrLn "Tem certeza que deseja começar de novo? y/n"
-                r <- getLine
+                r <- readUserInput ""
                 case toLower (r !! 0) of
                     'y' -> menu
+                    _ -> actionInGame board
+            -- Nova opção: Q para sair do programa
+            "q" -> do
+                putStrLn "Tem certeza que deseja sair do programa? y/n"
+                r <- readUserInput ""
+                case toLower (r !! 0) of
+                    'y' -> do
+                        putStrLn "Até logo! Obrigado por jogar SUDOKU!"
+                        threadDelay 500000  -- Aguarda 0.5s antes de sair
+                        exitSuccess  -- Encerra o programa completamente, ma não consegui fazer que não aparecesse a mensagem de exeption
                     _ -> actionInGame board
 
             _ -> actionInGame board
@@ -112,7 +133,7 @@ module UI where
     insertFlow :: B.Board -> IO B.Board
     insertFlow board = do
         putStrLn "Digite o número: "
-        num <- getLine
+        num <- readUserInput ""
 
         if not (isValidNumber num) then do
             putStrLn "Número inválido (1 a 9)"
@@ -120,7 +141,7 @@ module UI where
             return board
         else do
             putStrLn "Digite a coordenada"
-            coor <- getLine
+            coor <- readUserInput ""
 
             if not (isValidCoord coor) then do
                 putStrLn "Coordenada inválida (A1 a I9)"
@@ -151,7 +172,7 @@ module UI where
                     _ -> do
                         putStrLn "Entrada inválida"
                         return board
-            
+
 
     -- Funcao auxiliar de insercao
     insert :: Char -> Int -> Int -> B.Board -> Either B.BoardError B.Board
@@ -163,7 +184,7 @@ module UI where
     deleteFlow :: B.Board -> IO B.Board
     deleteFlow board = do
         putStrLn "Digite a coordenada"
-        coor <- getLine
+        coor <- readUserInput ""
 
         if not (isValidCoord coor) then do
             putStrLn "Coordenada inválida (A1 a I9)"
@@ -194,8 +215,8 @@ module UI where
                 _ -> do
                     putStrLn "Entrada inválida"
                     return board
-    
-        
+
+
     -- Função auxiliar de delete
     delete :: Int -> Int -> B.Board -> Either B.BoardError B.Board
     delete row col board = B.deleteCharFromBoard row col board
@@ -206,7 +227,7 @@ module UI where
         case readMaybe s :: Maybe Int of
             Just n  -> n >= 1 && n <= 9
             Nothing -> False
-    
+
     -- Valida a coordenada de entrada para estar dentro do escopo do tabuleiro
     -- A0 - I9
     isValidCoord :: String -> Bool
