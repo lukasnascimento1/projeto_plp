@@ -10,19 +10,12 @@ module UI where
     import Control.Concurrent (threadDelay)
     import System.Exit (exitSuccess)
     import System.IO (hFlush, stdout)
-    import System.Console.Haskeline
     import qualified Board as B
     import qualified Generator as G
+    import qualified Util
 
     type Cell = String --[Char]
 
-    -- Função auxiliar para ler entrada com suporte a backspace
-    readUserInput :: String -> IO String
-    readUserInput prompt = runInputT defaultSettings $ do
-        maybeLine <- getInputLine prompt
-        case maybeLine of
-            Nothing -> return ""  -- EOF
-            Just line -> return line
 
     tutorial = "[I] Inserir um número;"
             ++"\n[D] Deletar um número;"
@@ -35,31 +28,32 @@ module UI where
     about = "Sudoku é um jogo de lógica em que se preenche uma grade 9×9 com números de 1 a 9, sem repetir valores em linhas, colunas e regiões 3×3."
 
 
-    menu :: IO ()
+    menu :: IO String
     menu = do
         putStrLn "Pratique seu raciocínio lógico com: \n------>\tSUDOKU!\t<------"
         threadDelay 500000
         putStrLn ""
         putStrLn menuInicial
-        action <- readUserInput "> "
+        action <- Util.readUserInput "> "
         firstAction action
-        menuFinal
 
-
-    menuFinal :: IO ()
-    menuFinal = do
-        putStrLn "Parabéns!!!\nVocê Finalizou um SUDOKU\nDeseja jogar novamente? y/n"
-        r <- readUserInput ""
-        case map toLower r of
-            "y" -> menu
-            _ -> return ()
+    menuFinal :: String -> IO String 
+    menuFinal option = do
+        case option of
+            "quit" -> return ""
+            _ -> do
+                putStrLn "Parabéns!!!\nVocê Finalizou um SUDOKU\nDeseja jogar novamente? y/n"
+                r <- Util.readUserInput ""
+                case map toLower r of
+                    "y" -> menu
+                    _ -> return ""
 
 
     {-
     Seleciona a primeira ação a partir do Menu incial do jogo:
     A) About sudoku T) Tutorial do game X) Qualquer outra tecla inicia o jogo
     -}
-    firstAction :: String -> IO ()
+    firstAction :: String -> IO String
     firstAction action = do
         case map toLower action of
             "a" -> do
@@ -71,10 +65,10 @@ module UI where
             _-> startGame
 
     -- Inicia o modo de jogo
-    startGame :: IO ()
+    startGame :: IO String
     startGame = do
         putStrLn "Escolha o modo de jogo:\n\t[1] Quero um modo mais confortável\n\t[2] Me desafie!"
-        mode <- readUserInput "> "
+        mode <- Util.readUserInput "> "
         --putStrLn "teste"
         tabuleiro <- case mode of
             "1" -> G.generateEasy
@@ -86,42 +80,40 @@ module UI where
         --actionInGame B.tabuleiro -- (Acho que aqui deveria ser usado como parametro o tabuleiro já com modo)
         actionInGame tabuleiro
 
-    -- Autoexplicativo
-    clearScreen :: IO ()
-    clearScreen = putStr "\ESC[2J\ESC[H"
-
     -- Ações dentro do jogo
     -- Inserir/Deletar numero do tabuleiro
     -- Menu com opções de continuar jogando, recomeçar ou sair
-    actionInGame :: [[Char]] -> IO ()
+    actionInGame :: [[Char]] -> IO String
     actionInGame board = do
         B.printBoard board
         putStrLn "[I] Inserir um número;\n[D] Deletar um número;\n[R] Encerrar este jogo\n[Q] Sair do programa"
-        act <- readUserInput "> "
+        act <- Util.readUserInput "> "
         case map toLower act of
             "i" -> do
                 newBoard <- insertFlow board
-                clearScreen
+                Util.clearScreen
                 actionInGame newBoard
             "d" -> do
                 newBoard <- deleteFlow board
-                clearScreen
+                Util.clearScreen
                 actionInGame newBoard
             "r" -> do
                 putStrLn "Tem certeza que deseja começar de novo? y/n"
-                r <- readUserInput ""
+                r <- Util.readUserInput ""
                 case toLower (r !! 0) of
                     'y' -> menu
                     _ -> actionInGame board
             -- Nova opção: Q para sair do programa
             "q" -> do
                 putStrLn "Tem certeza que deseja sair do programa? y/n"
-                r <- readUserInput ""
+                r <- Util.readUserInput ""
                 case toLower (r !! 0) of
                     'y' -> do
                         putStrLn "Até logo! Obrigado por jogar SUDOKU!"
                         threadDelay 500000  -- Aguarda 0.5s antes de sair
-                        exitSuccess  -- Encerra o programa completamente, ma não consegui fazer que não aparecesse a mensagem de exeption
+                        -- exitSuccess  -- Encerra o programa completamente, ma não consegui fazer que não aparecesse a mensagem de exeption
+                        Util.clearScreen
+                        return ""
                     _ -> actionInGame board
 
             _ -> actionInGame board
@@ -133,7 +125,7 @@ module UI where
     insertFlow :: B.Board -> IO B.Board
     insertFlow board = do
         putStrLn "Digite o número: "
-        num <- readUserInput ""
+        num <- Util.readUserInput ""
 
         if not (isValidNumber num) then do
             putStrLn "Número inválido (1 a 9)"
@@ -141,16 +133,16 @@ module UI where
             return board
         else do
             putStrLn "Digite a coordenada"
-            coor <- readUserInput ""
+            coor <- Util.readUserInput ""
 
-            if not (isValidCoord coor) then do
+            if not (Util.isValidCoord coor) then do
                 putStrLn "Coordenada inválida (A1 a I9)"
                 threadDelay 700000
                 return board
             else do
                 case (num, coor) of
                     ([n], [l, d]) ->
-                        case mapLetterToNumber l of
+                        case Util.mapLetterToNumber l of
                             Just row -> do
                                 let baseCol = digitToInt d - 1
                                     col
@@ -184,16 +176,16 @@ module UI where
     deleteFlow :: B.Board -> IO B.Board
     deleteFlow board = do
         putStrLn "Digite a coordenada"
-        coor <- readUserInput ""
+        coor <- Util.readUserInput ""
 
-        if not (isValidCoord coor) then do
+        if not (Util.isValidCoord coor) then do
             putStrLn "Coordenada inválida (A1 a I9)"
             threadDelay 700000
             return board
         else do
             case coor of
                 [l, d] ->
-                    case mapLetterToNumber l of
+                    case Util.mapLetterToNumber l of
                         Just row -> do
                             let baseCol = digitToInt d - 1
                                 col
@@ -228,27 +220,4 @@ module UI where
             Just n  -> n >= 1 && n <= 9
             Nothing -> False
 
-    -- Valida a coordenada de entrada para estar dentro do escopo do tabuleiro
-    -- A0 - I9
-    isValidCoord :: String -> Bool
-    isValidCoord [l, d] =
-        let l' = toLower l
-        in  l' >= 'a' && l' <= 'i'
-            && d  >= '1' && d  <= '9'
-    isValidCoord _ = False
-
-    -- Mapeia as letas A-I aos numeros 0-8
-    mapLetterToNumber :: Char -> Maybe Int
-    mapLetterToNumber c =
-         case toLower c of
-        'a' -> Just 0
-        'b' -> Just 1
-        'c' -> Just 2
-        'd' -> Just 4
-        'e' -> Just 5
-        'f' -> Just 6
-        'g' -> Just 8
-        'h' -> Just 9
-        'i' -> Just 10
-        _   -> Nothing
-
+    
