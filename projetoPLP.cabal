@@ -1,0 +1,26 @@
+cabal-version:       3.0
+name:                projeto-plp
+version:             0.1.0.0
+
+library
+  hs-source-dirs: src
+  exposed-modules:
+      Board
+      Generator
+      UI
+      Validation
+      GameLoop
+  build-depends:
+      base >=4.14 && <5,
+      random,
+      haskeline
+  default-language: Haskell2010
+
+executable projeto-plp
+  hs-source-dirs: src
+  main-is: Main.hs
+  build-depends:
+      base >=4.14 && <5,
+      projeto-plp,
+      haskeline
+  default-language: Haskell2010
