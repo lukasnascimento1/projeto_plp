@@ -37,7 +37,7 @@ module UI where
         action <- Util.readUserInput "> "
         firstAction action
 
-    menuFinal :: String -> IO String 
+    menuFinal :: String -> IO String
     menuFinal option = do
         case option of
             "quit" -> return ""
@@ -78,7 +78,7 @@ module UI where
         threadDelay 500000
         putStrLn "Vamos lá!"
         --actionInGame B.tabuleiro -- (Acho que aqui deveria ser usado como parametro o tabuleiro já com modo)
-        let fixedNumbers = getFilledPositions tabuleiro 
+        let fixedNumbers = getFilledPositions tabuleiro
         actionInGame tabuleiro fixedNumbers
 
     -- Ações dentro do jogo
@@ -144,7 +144,7 @@ module UI where
                 if not (verifyCoord coor fixedNumbers) then do
                     putStrLn "Essas coordenadas são imutáveis!"
                     threadDelay 700000
-                    return board 
+                    return board
                 else do
                     case (num, coor) of
                         ([n], [l, d]) ->
@@ -170,8 +170,8 @@ module UI where
                         _ -> do
                             putStrLn "Entrada inválida"
                             return board
-                    
-                        
+
+
 
 
     -- Funcao auxiliar de insercao
@@ -191,7 +191,7 @@ module UI where
             threadDelay 700000
             return board
         else do
-            if verifyCoord coor fixedNumbers then do 
+            if verifyCoord coor fixedNumbers then do
                 case coor of
                     [l, d] ->
                         case Util.mapLetterToNumber l of
@@ -232,15 +232,15 @@ module UI where
         case readMaybe s :: Maybe Int of
             Just n  -> n >= 1 && n <= 9
             Nothing -> False
-    
+
     getFilledPositions :: [[Char]] -> [(Int, Int)]
     getFilledPositions board = [(r, c) | r <- valid, c <- valid, B.validateCoordenates r c, (board !! r !! c) /= 'x']
         where valid = [0, 1, 2, 4, 5, 6, 8, 9, 10]
-    
+
     -- retorna True se a coordenada não esrtiver na lista
     verifyCoord :: String -> [(Int, Int)] -> Bool
     verifyCoord [row, col] listCoord =
-        case Util.mapLetterToNumber row of
-            Just r  -> (r, digitToInt col) `notElem` listCoord
-            Nothing -> False
+        case (Util.mapLetterToNumber row, Util.mapDigitToColumn col) of
+            (Just r, Just c) -> (r, c) `notElem` listCoord
+            _ -> False
     verifyCoord _ _ = False
