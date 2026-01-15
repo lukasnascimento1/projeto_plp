@@ -78,31 +78,32 @@ module UI where
         threadDelay 500000
         putStrLn "Vamos lá!"
         --actionInGame B.tabuleiro -- (Acho que aqui deveria ser usado como parametro o tabuleiro já com modo)
-        actionInGame tabuleiro
+        let fixedNumbers = getFilledPositions tabuleiro 
+        actionInGame tabuleiro fixedNumbers
 
     -- Ações dentro do jogo
     -- Inserir/Deletar numero do tabuleiro
     -- Menu com opções de continuar jogando, recomeçar ou sair
-    actionInGame :: [[Char]] -> IO String
-    actionInGame board = do
+    actionInGame :: [[Char]] -> [(Int, Int)] -> IO String
+    actionInGame board fixedNumbers = do
         B.printBoard board
         putStrLn "[I] Inserir um número;\n[D] Deletar um número;\n[R] Encerrar este jogo\n[Q] Sair do programa"
         act <- Util.readUserInput "> "
         case map toLower act of
             "i" -> do
-                newBoard <- insertFlow board
+                newBoard <- insertFlow board fixedNumbers
                 Util.clearScreen
-                actionInGame newBoard
+                actionInGame newBoard fixedNumbers
             "d" -> do
-                newBoard <- deleteFlow board
+                newBoard <- deleteFlow board fixedNumbers
                 Util.clearScreen
-                actionInGame newBoard
+                actionInGame newBoard fixedNumbers
             "r" -> do
                 putStrLn "Tem certeza que deseja começar de novo? y/n"
                 r <- Util.readUserInput ""
                 case toLower (r !! 0) of
                     'y' -> menu
-                    _ -> actionInGame board
+                    _ -> actionInGame board fixedNumbers
             -- Nova opção: Q para sair do programa
             "q" -> do
                 putStrLn "Tem certeza que deseja sair do programa? y/n"
@@ -114,16 +115,16 @@ module UI where
                         -- exitSuccess  -- Encerra o programa completamente, ma não consegui fazer que não aparecesse a mensagem de exeption
                         Util.clearScreen
                         return ""
-                    _ -> actionInGame board
+                    _ -> actionInGame board fixedNumbers
 
-            _ -> actionInGame board
+            _ -> actionInGame board fixedNumbers
 
 
     -- Funcao do fluxo para inserir um elemento
     -- retorna IO Board para ser usado no actionInGame
     -- assim é possível visualizar a atualização do tabuleiro
-    insertFlow :: B.Board -> IO B.Board
-    insertFlow board = do
+    insertFlow :: B.Board -> [(Int, Int)] -> IO B.Board
+    insertFlow board fixedNumbers = do
         putStrLn "Digite o número: "
         num <- Util.readUserInput ""
 
@@ -140,8 +141,59 @@ module UI where
                 threadDelay 700000
                 return board
             else do
-                case (num, coor) of
-                    ([n], [l, d]) ->
+                if not (verifyCoord coor fixedNumbers) then do
+                    putStrLn "Essas coordenadas são imutáveis!"
+                    threadDelay 700000
+                    return board 
+                else do
+                    case (num, coor) of
+                        ([n], [l, d]) ->
+                            case Util.mapLetterToNumber l of
+                                Just row -> do
+                                    let baseCol = digitToInt d - 1
+                                        col
+                                            | baseCol >= 6 = baseCol + 2
+                                            | baseCol >= 3 = baseCol + 1
+                                            | otherwise    = baseCol
+
+                                    case insert n row col board of
+                                        Left erro -> do
+                                            print erro
+                                            return board
+                                        Right newBoard ->
+                                            return newBoard
+
+                                Nothing -> do
+                                    putStrLn "Coordenada inválida"
+                                    return board
+
+                        _ -> do
+                            putStrLn "Entrada inválida"
+                            return board
+                    
+                        
+
+
+    -- Funcao auxiliar de insercao
+    insert :: Char -> Int -> Int -> B.Board -> Either B.BoardError B.Board
+    insert num row col board = B.insertCharOnBoard num row col board --AJUSTAR
+
+    -- Funcao do fluxo para remover um elemento
+    -- retorna IO Board para ser usado no actionInGame
+    -- assim é possível visualizar a atualização do tabuleiro
+    deleteFlow :: B.Board -> [(Int, Int)] -> IO B.Board
+    deleteFlow board fixedNumbers = do
+        putStrLn "Digite a coordenada"
+        coor <- Util.readUserInput ""
+
+        if not (Util.isValidCoord coor) then do
+            putStrLn "Coordenada inválida (A1 a I9)"
+            threadDelay 700000
+            return board
+        else do
+            if verifyCoord coor fixedNumbers then do 
+                case coor of
+                    [l, d] ->
                         case Util.mapLetterToNumber l of
                             Just row -> do
                                 let baseCol = digitToInt d - 1
@@ -150,7 +202,7 @@ module UI where
                                         | baseCol >= 3 = baseCol + 1
                                         | otherwise    = baseCol
 
-                                case insert n row col board of
+                                case delete row col board of
                                     Left erro -> do
                                         print erro
                                         return board
@@ -164,48 +216,9 @@ module UI where
                     _ -> do
                         putStrLn "Entrada inválida"
                         return board
-
-
-    -- Funcao auxiliar de insercao
-    insert :: Char -> Int -> Int -> B.Board -> Either B.BoardError B.Board
-    insert num row col board = B.insertCharOnBoard num row col board --AJUSTAR
-
-    -- Funcao do fluxo para remover um elemento
-    -- retorna IO Board para ser usado no actionInGame
-    -- assim é possível visualizar a atualização do tabuleiro
-    deleteFlow :: B.Board -> IO B.Board
-    deleteFlow board = do
-        putStrLn "Digite a coordenada"
-        coor <- Util.readUserInput ""
-
-        if not (Util.isValidCoord coor) then do
-            putStrLn "Coordenada inválida (A1 a I9)"
-            threadDelay 700000
-            return board
-        else do
-            case coor of
-                [l, d] ->
-                    case Util.mapLetterToNumber l of
-                        Just row -> do
-                            let baseCol = digitToInt d - 1
-                                col
-                                    | baseCol >= 6 = baseCol + 2
-                                    | baseCol >= 3 = baseCol + 1
-                                    | otherwise    = baseCol
-
-                            case delete row col board of
-                                Left erro -> do
-                                    print erro
-                                    return board
-                                Right newBoard ->
-                                    return newBoard
-
-                        Nothing -> do
-                            putStrLn "Coordenada inválida"
-                            return board
-
-                _ -> do
-                    putStrLn "Entrada inválida"
+            else do
+                    putStrLn "Essas coordenadas são imutáveis!"
+                    threadDelay 700000
                     return board
 
 
@@ -219,5 +232,15 @@ module UI where
         case readMaybe s :: Maybe Int of
             Just n  -> n >= 1 && n <= 9
             Nothing -> False
-
     
+    getFilledPositions :: [[Char]] -> [(Int, Int)]
+    getFilledPositions board = [(r, c) | r <- valid, c <- valid, B.validateCoordenates r c, (board !! r !! c) /= 'x']
+        where valid = [0, 1, 2, 4, 5, 6, 8, 9, 10]
+    
+    -- retorna True se a coordenada não esrtiver na lista
+    verifyCoord :: String -> [(Int, Int)] -> Bool
+    verifyCoord [row, col] listCoord =
+        case Util.mapLetterToNumber row of
+            Just r  -> (r, digitToInt col) `notElem` listCoord
+            Nothing -> False
+    verifyCoord _ _ = False
