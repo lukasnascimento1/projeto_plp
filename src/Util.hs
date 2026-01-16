@@ -24,7 +24,7 @@ module Util where
             && d  >= '1' && d  <= '9'
     isValidCoord _ = False
 
-    -- Mapeia as letas A-I aos numeros 0-8
+    -- Mapeia as letas A-I aos numeros 0-8, considerando as divisorias do tabuleiro (por isso não tem o 3 nem o 7)
     mapLetterToNumber :: Char -> Maybe Int
     mapLetterToNumber c =
         case toLower c of
@@ -39,7 +39,7 @@ module Util where
         'i' -> Just 10
         _   -> Nothing
 
-    -- mapeia os digitos 1-9 para as colunas corretas do tabuleiro, da matriz.
+    -- mapeia os digitos 1-9 para as colunas corretas do tabuleiro, da matriz. Considerando as divisorias do tabuleiro (por isso não tem o 3 nem o 7)
     mapDigitToColumn ::  Char -> Maybe Int
     mapDigitToColumn d =
         case d of
