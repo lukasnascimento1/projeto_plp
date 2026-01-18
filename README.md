@@ -65,7 +65,7 @@ menu
 
 ### 4. Executar testes
 ```
-cabal repl sudoku-tests
+cabal test
 ```
 
 
