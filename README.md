@@ -47,17 +47,28 @@ Implementar um jogo completo de Sudoku em Haskell com:
     git clone <url>
     cd sudoku-haskell
 
-### 2. Executar com Stack
+### 2. Executar com Cabal (Modo Interativo)
 
-    stack run
+Para rodar o jogo através do interpretador e acessar o menu:
 
-Ou compilar:
+**Inicie o REPL:**
 
-    stack build
+```bash
+cabal repl
+```
 
-### 3. Executar testes
+### 3. Carregar o módulo e iniciar
+```bash
+import UI
+menu
+```
 
-    stack test
+### 4. Executar testes
+```
+cabal repl sudoku-tests
+```
+
+
 
 ------------------------------------------------------------------------
 
