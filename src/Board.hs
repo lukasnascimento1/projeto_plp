@@ -80,22 +80,26 @@ module Board where
     printBoard :: Board -> IO ()
     printBoard board = do
         putStrLn cabeçalho  -- imprime a linha de cabeçalho com os numeros das colunas
-        putStrLn (unlines linhasComRotulos)  -- imprime o tabuleiro com os rotulos das linhas
+        putStrLn "" -- espaçamento entre cabeçalho e tabuleiro
+
+        let tabuleiroComRodape = adicionaRotulos coordenadasX board ++ [linhaFinal]
+        putStr (unlines tabuleiroComRodape)  -- imprime o tabuleiro com os rotulos das linhas
         where
+            espaçar s = unwords (map (:[]) s)
             -- Cria o cabeçalho com os números de 1 a 9 espaçados e separados por espaco a cada 3 numeros
-            cabeçalho = "  " ++ ['1', '2', '3', ' ', '4', '5', '6', ' ', '7', '8', '9']
-
-            -- Adiciona os rótulos de letras (A-I) às linhas do tabuleiro
-            linhasComRotulos = adicionaRotulos coordenadasX board
-
+            cabeçalho = "    1 2 3   4 5 6   7 8 9"
+            separadorLargo = replicate 21 '-'
+            linhaFinal = "    " ++ separadorLargo
             -- Função recursiva que associa cada letra a sua respectiva linha
             adicionaRotulos :: [Char] -> Board -> [String]
             adicionaRotulos _ [] = []  -- caso base: quando não tem mais linhas, retorna lista vazia
             adicionaRotulos rotulos (linha:resto)
                 -- Se a linha tem '-', é uma linha separadora: adiciona espaçamento e não consome letra
-                | '-' `elem` linha = ("  " ++ linha) : adicionaRotulos rotulos resto
+                | '-' `elem` linha = ("    " ++ separadorLargo) : adicionaRotulos rotulos resto
                 -- Se não é separadora: adiciona a primeira letra + espaço + conteúdo da linha, depois continua com letras restantes
-                | otherwise = (head rotulos : ' ' : linha) : adicionaRotulos (tail rotulos) resto
+                | otherwise = 
+                    let linhaFormatada = espaçar linha
+                    in (head rotulos : "   " ++ linhaFormatada) : adicionaRotulos (tail rotulos) resto
 
     {-
     Noting:
