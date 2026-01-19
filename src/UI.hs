@@ -10,12 +10,19 @@ module UI where
     import Control.Concurrent (threadDelay)
     import System.Exit (exitSuccess)
     import System.IO (hFlush, stdout)
+    import Board (Board)
     import qualified Board as B
     import qualified Generator as G
     import qualified Validation as V
     import qualified Util
 
     type Cell = String --[Char]
+
+    data GameState = GameState
+        {
+            initialBoard :: Board, --imutavel
+            currentBoard :: Board
+        }
 
 
     tutorial = "[I] Inserir um número"
@@ -65,40 +72,56 @@ module UI where
                 menu
             _-> startGame
 
+    -- Atualiza o GameState
+    initGame :: Board -> IO GameState
+    initGame board =
+        return GameState 
+        {   initialBoard = board,
+            currentBoard = board
+        }
+    
+    -- atualiza o valor do tabuleiro atual em GameState
+    updateGameState :: GameState -> Board -> GameState
+    updateGameState gameState newBoard =
+        gameState {currentBoard = newBoard}
+
     -- Inicia o modo de jogo
     startGame :: IO String
     startGame = do
         putStrLn "Escolha o modo de jogo:\n\t[1] Quero um modo mais confortável\n\t[2] Me desafie!"
         mode <- Util.readUserInput "> "
-        --putStrLn "teste"
+        
         tabuleiro <- case mode of
             "1" -> G.generateEasy
             "2" -> G.generateHard
             _ -> G.generateEasy
+        
+        gameState <- initGame tabuleiro
         putStrLn "Muito bem..."
         threadDelay 500000
         putStrLn "Vamos lá!"
-        --actionInGame B.tabuleiro -- (Acho que aqui deveria ser usado como parametro o tabuleiro já com modo)
         let fixedNumbers = getFilledPositions tabuleiro
-        actionInGame tabuleiro fixedNumbers
+        actionInGame gameState tabuleiro fixedNumbers
 
     -- Ações dentro do jogo
     -- Inserir/Deletar numero do tabuleiro
     -- Menu com opções de continuar jogando, recomeçar ou sair
-    actionInGame :: [[Char]] -> [(Int, Int)] -> IO String
-    actionInGame board fixedNumbers = do
-        B.printBoard board
+    actionInGame :: GameState -> [[Char]] -> [(Int, Int)] -> IO String
+    actionInGame gameState board fixedNumbers = do
+        B.printBoard (initialBoard gameState) (currentBoard gameState)
         putStrLn "[I] Inserir um número\n[D] Deletar um número\n[R] Encerrar este jogo\n[V] Verificar solução\n[Q] Sair do programa"
         act <- Util.readUserInput "> "
         case map toLower act of
             "i" -> do
                 newBoard <- insertFlow board fixedNumbers
                 Util.clearScreen
-                actionInGame newBoard fixedNumbers
+                let gs = updateGameState gameState newBoard
+                actionInGame gs newBoard fixedNumbers
             "d" -> do
                 newBoard <- deleteFlow board fixedNumbers
                 Util.clearScreen
-                actionInGame newBoard fixedNumbers
+                let gs = updateGameState gameState newBoard
+                actionInGame gs newBoard fixedNumbers
             "r" -> do
                 putStrLn "Tem certeza que deseja começar de novo? y/n"
                 r <- Util.readUserInput ""
@@ -106,7 +129,9 @@ module UI where
                         ('y':_) -> menu
                         _ -> do
                             Util.clearScreen
-                            actionInGame board fixedNumbers
+                            let gs = updateGameState gameState board
+                            actionInGame gs board fixedNumbers
+                            
             "v" -> do
                 putStrLn "Verificando solução..."
                 if V.isSolutionValid board
@@ -118,12 +143,12 @@ module UI where
                         ('y':_) -> menu
                         _ -> do
                             Util.clearScreen
-                            actionInGame board fixedNumbers
+                            actionInGame gameState board fixedNumbers
                     else do
                     putStrLn "Ops... ainda tem algo errado ou faltando."
                     threadDelay 1000000
                     Util.clearScreen
-                    actionInGame board fixedNumbers
+                    actionInGame gameState board fixedNumbers
             -- Nova opção: Q para sair do programa
             "q" -> do
                 putStrLn "Tem certeza que deseja sair do programa? y/n"
@@ -137,11 +162,11 @@ module UI where
                         return ""
                     _ -> do
                         Util.clearScreen
-                        actionInGame board fixedNumbers
+                        actionInGame gameState board fixedNumbers
 
             _ -> do
                 Util.clearScreen
-                actionInGame board fixedNumbers
+                actionInGame gameState board fixedNumbers
 
 
     -- Funcao do fluxo para inserir um elemento
@@ -257,6 +282,7 @@ module UI where
             Just n  -> n >= 1 && n <= 9
             Nothing -> False
 
+    -- Retorna as posições preenchidas do tabuleiro
     getFilledPositions :: [[Char]] -> [(Int, Int)]
     getFilledPositions board = [(r, c) | r <- valid, c <- valid, B.validateCoordenates r c, (board !! r !! c) /= 'x']
         where valid = [0, 1, 2, 4, 5, 6, 8, 9, 10]
