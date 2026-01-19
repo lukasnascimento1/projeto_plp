@@ -13,25 +13,40 @@ module Board where
         = InvalidCoordinates
         deriving (Show, Eq)
 
+    textColorWhiteWeak = "\ESC[2;37m"
+    textColorGreenWeak = "\ESC[2;32m"
+    textColorGreen = "\ESC[92m"
+    textBold = "\ESC[1m"
+    resetColor = "\ESC[0m"
+
     coordenadasX = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']
     coordenadasY = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
     linhaVaziaTabuleiro = ['x', 'x', 'x'] ++ ['|'] ++ ['x', 'x', 'x'] ++ ['|'] ++ ['x', 'x', 'x']
+    -- linhaVaziaTabuleiro = "\ESC[32m" ++ 
+    --                         ['x', 'x', 'x'] ++ "\ESC[2;37m" ++ ['|'] ++ "\ESC[0m" ++
+    --                         ['x', 'x', 'x'] ++ "\ESC[2;37m" ++ ['|'] ++ "\ESC[0m" ++
+    --                         ['x', 'x', 'x'] ++
+    --                         "\ESC[0m"
+    
     linhaPipe = replicate 11 '-'
 
+    -- inicia o valor de tabuleiro como um tabuleiro vazio
     tabuleiro = emptyBoard
 
-
-    {- emptyBoard retorna uma matriz 11x11 somente com 'x's e as barras de divisao
-    usar take e drop para operar os elementos da matriz
-    take :: Int -> [a] -> [a]
-    drop :: Int -> [a] -> [a]
-     essas funcoes descartam os n ultimos/primeiros elementos e retorna o resto
-
-    -}
+    -- Constrói um tabuleiro vazio
     emptyBoard :: Board
     emptyBoard = (replicate 3 linhaVaziaTabuleiro) ++ [linhaPipe]
                 ++ (replicate 3 linhaVaziaTabuleiro) ++ [linhaPipe]
                 ++ (replicate 3 linhaVaziaTabuleiro)
+    
+    -- Dá cor às divisorias do tabuleiro
+    coloredBoard :: String -> String
+    coloredBoard [] = []
+    coloredBoard (c:cs)
+        | c == 'x' = textColorGreen ++ "x" ++ resetColor
+        | c == '|' = textColorWhiteWeak ++ "|" ++ resetColor
+        | c == '-' = "\ESC[34m" ++ "-" ++ resetColor
+        | otherwise = c : coloredBoard cs
 
 
     -- indices proibidos na matriz: 3 e 7 pois são as divisorias
@@ -87,23 +102,26 @@ module Board where
         where
             espaçar s = unwords (map (:[]) s)
             -- Cria o cabeçalho com os números de 1 a 9 espaçados e separados por espaco a cada 3 numeros
-            cabeçalho = "    1 2 3   4 5 6   7 8 9"
-            separadorLargo = replicate 21 '-'
-            linhaFinal = "    " ++ separadorLargo
+            cabeçalho = "\ESC[1;35m    1 2 3   4 5 6   7 8 9\ESC[0m"
+            -- cabeçalho = "    1 2 3   4 5 6   7 8 9"
+            separadorLargo = replicate 21 '-' --"\ESC[2;36m-\ESC[0"
+            linhaFinal = textColorWhiteWeak ++ "    " ++ separadorLargo ++ resetColor
             -- Função recursiva que associa cada letra a sua respectiva linha
             adicionaRotulos :: [Char] -> Board -> [String]
             adicionaRotulos _ [] = []  -- caso base: quando não tem mais linhas, retorna lista vazia
             adicionaRotulos rotulos (linha:resto)
                 -- Se a linha tem '-', é uma linha separadora: adiciona espaçamento e não consome letra
-                | '-' `elem` linha = ("    " ++ separadorLargo) : adicionaRotulos rotulos resto
+                | '-' `elem` linha = (textColorWhiteWeak ++ "    " ++ separadorLargo ++ resetColor) : adicionaRotulos rotulos resto
                 -- Se não é separadora: adiciona a primeira letra + espaço + conteúdo da linha, depois continua com letras restantes
                 | otherwise = 
-                    let linhaFormatada = espaçar linha
+                    -- let linhaFormatada = espaçar linha
+                    let linhaFormatada = unwords (map (colorChar) linha)
                     in (head rotulos : "   " ++ linhaFormatada) : adicionaRotulos (tail rotulos) resto
+                    where
+                        colorChar :: Char -> String
+                        colorChar c
+                            | c `elem` ['1'..'9'] = textColorGreen ++ [c] ++ resetColor
+                            | c == 'x' = textColorGreenWeak ++ "x" ++ resetColor
+                            | c == '|' || c == '-' = textColorWhiteWeak ++ [c] ++ resetColor
+                            | otherwise = [c]
 
-    {-
-    Noting:
-        Entao para inserir ou remover um numero no tabuleiro será preciso
-        usar take e drop
-        Essas funcoes irão montar um novo [Char]
-    -}
