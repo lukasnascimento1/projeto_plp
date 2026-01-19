@@ -12,15 +12,16 @@ module UI where
     import System.IO (hFlush, stdout)
     import qualified Board as B
     import qualified Generator as G
+    import qualified Validation as V
     import qualified Util
 
     type Cell = String --[Char]
 
 
-    tutorial = "[I] Inserir um número;"
-            ++"\n[D] Deletar um número;"
+    tutorial = "[I] Inserir um número"
+            ++"\n[D] Deletar um número"
             ++"\nAo selecionar essas ações você precisará inserir as coordenadas da jogada ('A1', 'D7', 'I9')"
-            ++"\n[H] Help"
+            ++"\n[V] Verificar solução"
             ++"\n[R] Restart"
 
     menuInicial = "[A] Sobre o Sudoku\n[T] Tutorial\nQualquer outra tecla inicia o jogo\n"
@@ -87,7 +88,7 @@ module UI where
     actionInGame :: [[Char]] -> [(Int, Int)] -> IO String
     actionInGame board fixedNumbers = do
         B.printBoard board
-        putStrLn "[I] Inserir um número;\n[D] Deletar um número;\n[R] Encerrar este jogo\n[Q] Sair do programa"
+        putStrLn "[I] Inserir um número\n[D] Deletar um número\n[R] Encerrar este jogo\n[V] Verificar solução\n[Q] Sair do programa"
         act <- Util.readUserInput "> "
         case map toLower act of
             "i" -> do
@@ -101,23 +102,46 @@ module UI where
             "r" -> do
                 putStrLn "Tem certeza que deseja começar de novo? y/n"
                 r <- Util.readUserInput ""
-                case toLower (r !! 0) of
-                    'y' -> menu
-                    _ -> actionInGame board fixedNumbers
+                case map toLower r of
+                        ('y':_) -> menu
+                        _ -> do
+                            Util.clearScreen
+                            actionInGame board fixedNumbers
+            "v" -> do
+                putStrLn "Verificando solução..."
+                if V.isSolutionValid board
+                    then do
+                    putStrLn "Parabéns! Você finalizou esse SUDOKU!"
+                    putStrLn "Deseja começar um novo jogo? y/n"
+                    r <- Util.readUserInput ""
+                    case map toLower r of
+                        ('y':_) -> menu
+                        _ -> do
+                            Util.clearScreen
+                            actionInGame board fixedNumbers
+                    else do
+                    putStrLn "Ops... ainda tem algo errado ou faltando."
+                    threadDelay 1000000
+                    Util.clearScreen
+                    actionInGame board fixedNumbers
             -- Nova opção: Q para sair do programa
             "q" -> do
                 putStrLn "Tem certeza que deseja sair do programa? y/n"
                 r <- Util.readUserInput ""
-                case toLower (r !! 0) of
-                    'y' -> do
+                case map toLower r of
+                    ('y':_) -> do
                         putStrLn "Até logo! Obrigado por jogar SUDOKU!"
-                        threadDelay 500000  -- Aguarda 0.5s antes de sair
+                        threadDelay 1000000  -- Aguarda 1s antes de sair
                         -- exitSuccess  -- Encerra o programa completamente, ma não consegui fazer que não aparecesse a mensagem de exeption
                         Util.clearScreen
                         return ""
-                    _ -> actionInGame board fixedNumbers
+                    _ -> do
+                        Util.clearScreen
+                        actionInGame board fixedNumbers
 
-            _ -> actionInGame board fixedNumbers
+            _ -> do
+                Util.clearScreen
+                actionInGame board fixedNumbers
 
 
     -- Funcao do fluxo para inserir um elemento
@@ -133,7 +157,7 @@ module UI where
             threadDelay 700000
             return board
         else do
-            putStrLn "Digite a coordenada"
+            putStrLn "Digite a coordenada:"
             coor <- Util.readUserInput ""
 
             if not (Util.isValidCoord coor) then do
@@ -183,7 +207,7 @@ module UI where
     -- assim é possível visualizar a atualização do tabuleiro
     deleteFlow :: B.Board -> [(Int, Int)] -> IO B.Board
     deleteFlow board fixedNumbers = do
-        putStrLn "Digite a coordenada"
+        putStrLn "Digite a coordenada:"
         coor <- Util.readUserInput ""
 
         if not (Util.isValidCoord coor) then do
