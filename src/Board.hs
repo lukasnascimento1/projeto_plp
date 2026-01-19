@@ -18,6 +18,7 @@ module Board where
     textColorBlueWeak = "\ESC[2;34m"
     textColorCyanWeak = "\ESC[2;36m"
     textColorGreen = "\ESC[92m"
+    textColorYellow = "\ESC[93m"
     textBold = "\ESC[1m"
     resetColor = "\ESC[0m"
 
