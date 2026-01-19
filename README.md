@@ -42,12 +42,12 @@ Implementar um jogo completo de Sudoku em Haskell com:
 
 ## 🚀 Como Executar
 
-### 1. Clonar o repositório
+### 1. Clonar o repositório e ir para a pasta
 
     git clone <url>
-    cd sudoku-haskell
+    cd projeto_plp
 
-### 2. Executar com Cabal (Modo Interativo)
+### 2. Executar com Cabal
 
 Para rodar o jogo através do interpretador e acessar o menu:
 
@@ -57,13 +57,16 @@ Para rodar o jogo através do interpretador e acessar o menu:
 cabal repl
 ```
 
-### 3. Carregar o módulo e iniciar
+**Dentro do GHCi, importe e inicie:**
+
 ```bash
 import UI
 menu
 ```
 
-### 4. Executar testes
+
+### 3. Executar testes
+
 ```
 cabal test
 ```

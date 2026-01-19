@@ -10,6 +10,8 @@ library
       UI
       Validation
       GameLoop
+      Util
+      Main
   build-depends:
       base >=4.14 && <5,
       random,
@@ -20,10 +22,18 @@ library
 executable projeto-plp
   hs-source-dirs: src
   main-is: Main.hs
+  other-modules:
+      Board
+      Generator
+      UI
+      Validation
+      Util
+      GameLoop
   build-depends:
       base >=4.14 && <5,
-    --  projeto-plp,
+      random,
       haskeline
+    --  projeto-plp
   default-language: Haskell2010
 
 
@@ -31,6 +41,10 @@ test-suite sudoku-test
   type: exitcode-stdio-1.0
   hs-source-dirs: tests 
   main-is: MainTest.hs
+  other-modules:
+    BoardTests
+    GeneratorTests
+    ValidationTests
   build-depends:
       base >=4.14 && <5,
       HUnit,
