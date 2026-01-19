@@ -25,15 +25,16 @@ module UI where
         }
 
 
-    tutorial = "[I] Inserir um número"
-            ++"\n[D] Deletar um número"
+    tutorial = B.textColorYellow ++ "[I] " ++ B.resetColor ++ "Inserir um número"
+            ++"\n" ++ B.textColorYellow ++ "[D] " ++ B.resetColor ++ "Deletar um número"
             ++"\nAo selecionar essas ações você precisará inserir as coordenadas da jogada ('A1', 'D7', 'I9')"
-            ++"\n[V] Verificar solução"
-            ++"\n[R] Restart"
+            ++"\n" ++ B.textColorYellow ++ "[V] " ++ B.resetColor ++ "Verificar solução"
+            ++"\n" ++ B.textColorYellow ++ "[D] " ++ B.resetColor ++ " Restart"
 
-    menuInicial = "[A] Sobre o Sudoku\n[T] Tutorial\nQualquer outra tecla inicia o jogo\n"
+    menuInicial = B.textColorYellow ++ "[A] " ++ B.resetColor ++ " Sobre o Sudoku\n"
+                ++ B.textColorYellow ++ "[T] " ++ B.resetColor ++" Tutorial\nQualquer outra tecla inicia o jogo\n"
     finalizou = "Yeah!!! Você finalizou este SUDOKU!"
-    about = "Sudoku é um jogo de lógica em que se preenche uma grade 9×9 com números de 1 a 9, sem repetir valores em linhas, colunas e regiões 3×3."
+    about = "SUDOKU é um jogo de lógica em que se preenche uma grade 9×9 com números de 1 a 9, sem repetir valores em linhas, colunas e regiões 3×3."
 
 
     menu :: IO String
@@ -88,7 +89,10 @@ module UI where
     -- Inicia o modo de jogo
     startGame :: IO String
     startGame = do
-        putStrLn "Escolha o modo de jogo:\n\t[1] Quero um modo mais confortável\n\t[2] Me desafie!"
+        putStrLn $ 
+                "Escolha o modo de jogo:\n\t" ++
+                B.textColorYellow ++ "[1] " ++ B.resetColor ++ " Quero um modo mais confortável\n\t" ++
+                B.textColorYellow ++ "[2] " ++ B.resetColor ++ " Me desafie!"
         mode <- Util.readUserInput "> "
         
         tabuleiro <- case mode of
@@ -109,7 +113,13 @@ module UI where
     actionInGame :: GameState -> [[Char]] -> [(Int, Int)] -> IO String
     actionInGame gameState board fixedNumbers = do
         B.printBoard (initialBoard gameState) (currentBoard gameState)
-        putStrLn "[I] Inserir um número\n[D] Deletar um número\n[R] Encerrar este jogo\n[V] Verificar solução\n[Q] Sair do programa"
+        putStrLn $
+                B.textColorYellow ++ "[I] " ++ B.resetColor ++ " Inserir um número\n" ++
+                B.textColorYellow ++ "[D] " ++ B.resetColor ++ " Deletar um número\n" ++
+                B.textColorYellow ++ "[R] " ++ B.resetColor ++ " Encerrar este jogo\n" ++
+                B.textColorYellow ++ "[V] " ++ B.resetColor ++ " Verificar solução\n" ++
+                B.textColorYellow ++ "[Q] " ++ B.resetColor ++ " Sair do programa"
+       
         act <- Util.readUserInput "> "
         case map toLower act of
             "i" -> do
