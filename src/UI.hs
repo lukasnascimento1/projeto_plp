@@ -23,7 +23,6 @@ module UI where
             currentBoard :: Board
         }
 
-
     tutorial = B.textColorYellow ++ "[I] " ++ B.resetColor ++ "Inserir um número"
             ++"\n" ++ B.textColorYellow ++ "[D] " ++ B.resetColor ++ "Deletar um número"
             ++"\nAo selecionar essas ações você precisará inserir as coordenadas da jogada ('A1', 'D7', 'I9')"
@@ -35,7 +34,6 @@ module UI where
     finalizou = "Yeah!!! Você finalizou este SUDOKU!"
     about = "SUDOKU é um jogo de lógica em que se preenche uma grade 9×9 com números de 1 a 9, sem repetir valores em linhas, colunas e regiões 3×3."
 
-
     menu :: IO String
     menu = do
         Util.clearScreen
@@ -45,18 +43,6 @@ module UI where
         putStrLn menuInicial
         action <- Util.readUserInput "> "
         firstAction action
-
-    menuFinal :: String -> IO String
-    menuFinal option = do
-        case option of
-            "quit" -> return ""
-            _ -> do
-                putStrLn "Parabéns!!!\nVocê Finalizou um SUDOKU\nDeseja jogar novamente? y/n"
-                r <- Util.readUserInput ""
-                case map toLower r of
-                    "y" -> menu
-                    _ -> return ""
-
 
     {-
     Seleciona a primeira ação a partir do Menu incial do jogo:
@@ -175,11 +161,9 @@ module UI where
                     _ -> do
                         Util.clearScreen
                         actionInGame gameState board fixedNumbers
-
             _ -> do
                 Util.clearScreen
                 actionInGame gameState board fixedNumbers
-
 
     -- Funcao do fluxo para inserir um elemento
     -- retorna IO Board para ser usado no actionInGame
@@ -232,9 +216,6 @@ module UI where
                             putStrLn "Entrada inválida"
                             return board
 
-
-
-
     -- Funcao auxiliar de insercao
     insert :: Char -> Int -> Int -> B.Board -> Either B.BoardError B.Board
     insert num row col board = B.insertCharOnBoard num row col board --AJUSTAR
@@ -281,7 +262,6 @@ module UI where
                     putStrLn "Essas coordenadas são imutáveis!"
                     threadDelay 700000
                     return board
-
 
     -- Função auxiliar de delete
     delete :: Int -> Int -> B.Board -> Either B.BoardError B.Board

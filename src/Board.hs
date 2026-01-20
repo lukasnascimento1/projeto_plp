@@ -51,7 +51,6 @@ module Board where
         | c == '-' = "\ESC[34m" ++ "-" ++ resetColor
         | otherwise = c : coloredBoard cs
 
-
     -- indices proibidos na matriz: 3 e 7 pois são as divisorias
 
     -- Adiciona um elemento do tipo Char na linha do tabuleiro
@@ -59,7 +58,6 @@ module Board where
     insertCharOnRow num ind row
         | ind < 0 || ind >= length row = row
         | otherwise = take ind row ++ [num] ++ drop (ind + 1) row
-
 
     -- Insere um elemento do tipo Char no tabuleiro
     insertCharOnBoard :: Char -> Int -> Int -> Board -> Either BoardError Board
@@ -92,7 +90,6 @@ module Board where
         where
             inRange i = i >= 0 && i <= 10
             validInd i = (i /= 3) && (i /= 7)
-
 
     -- Imprime o tabuleiro formatado na tela
     printBoard :: Board -> Board -> IO ()
