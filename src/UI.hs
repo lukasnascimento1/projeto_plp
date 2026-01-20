@@ -15,6 +15,15 @@ module UI where
     import qualified Validation as V
     import qualified Util
 
+    textColorWhiteWeak = "\ESC[2;37m"
+    textColorGreenWeak = "\ESC[2;32m"
+    textColorBlueWeak = "\ESC[2;34m"
+    textColorCyanWeak = "\ESC[2;36m"
+    textColorGreen = "\ESC[92m"
+    textColorYellow = "\ESC[93m"
+    textBold = "\ESC[1m"
+    resetColor = "\ESC[0m"
+
     type Cell = String --[Char]
 
     data GameState = GameState
@@ -23,21 +32,48 @@ module UI where
             currentBoard :: Board
         }
 
-    tutorial = B.textColorYellow ++ "[I] " ++ B.resetColor ++ "Inserir um número"
-            ++"\n" ++ B.textColorYellow ++ "[D] " ++ B.resetColor ++ "Deletar um número"
+    tutorial = textColorYellow ++ "[I] " ++ resetColor ++ "Inserir um número"
+            ++"\n" ++ textColorYellow ++ "[D] " ++ resetColor ++ "Deletar um número"
             ++"\nAo selecionar essas ações você precisará inserir as coordenadas da jogada ('A1', 'D7', 'I9')"
-            ++"\n" ++ B.textColorYellow ++ "[V] " ++ B.resetColor ++ "Verificar solução"
-            ++"\n" ++ B.textColorYellow ++ "[D] " ++ B.resetColor ++ " Restart"
+            ++"\n" ++ textColorYellow ++ "[V] " ++ resetColor ++ "Verificar solução"
+            ++"\n" ++ textColorYellow ++ "[D] " ++ resetColor ++ " Restart"
 
-    menuInicial = B.textColorYellow ++ "[A] " ++ B.resetColor ++ " Sobre o Sudoku\n"
-                ++ B.textColorYellow ++ "[T] " ++ B.resetColor ++" Tutorial\nQualquer outra tecla inicia o jogo\n"
-    finalizou = "Yeah!!! Você finalizou este SUDOKU!"
+    menuInicial = textColorYellow ++ "[A] " ++ resetColor ++ " Sobre o Sudoku\n"
+                ++ textColorYellow ++ "[T] " ++ resetColor ++" Tutorial\nQualquer outra tecla inicia o jogo\n"
+    
     about = "SUDOKU é um jogo de lógica em que se preenche uma grade 9×9 com números de 1 a 9, sem repetir valores em linhas, colunas e regiões 3×3."
+
+    -- movi a lógica de impressão para o módulo de interface
+    printBoard :: Board -> Board -> IO ()
+    printBoard initial current = do
+        putStrLn cabecalho
+        putStrLn divisoria
+        mapM_ printRow (zip3 [0..8] initial current)
+
+      where
+        cabecalho = "\ESC[1;35m    1 2 3   4 5 6   7 8 9\ESC[0m"
+        divisoria = "  +-------+-------+-------+"
+        
+        printRow (idx, rowIni, rowCur) = do
+            let letra = ['A'..'I'] !! idx
+            let cells = zipWith colorCell rowIni rowCur
+            let p1 = unwords (take 3 cells)
+            let p2 = unwords (take 3 (drop 3 cells))
+            let p3 = unwords (take 3 (drop 6 cells))
+            putStrLn $ [letra] ++ " | " ++ p1 ++ " | " ++ p2 ++ " | " ++ p3 ++ " |"
+            if idx `elem` [2, 5, 8]
+                then putStrLn divisoria
+                else return ()
+
+        colorCell ini cur
+            | cur == 'x' = textColorWhiteWeak ++ "x" ++ resetColor
+            | ini /= 'x' = textColorCyanWeak ++ [cur] ++ resetColor 
+            | otherwise  = textBold ++ textColorGreen ++ [cur] ++ resetColor
 
     menu :: IO String
     menu = do
         Util.clearScreen
-        putStrLn "Pratique seu raciocínio lógico com: \n------>\tSUDOKU!\t<------"
+        putStrLn "Pratique seu raciocínio lógico com:\n------>\tSUDOKU!\t<------"
         threadDelay 500000
         putStrLn ""
         putStrLn menuInicial
@@ -49,23 +85,26 @@ module UI where
     A) About sudoku T) Tutorial do game X) Qualquer outra tecla inicia o jogo
     -}
     firstAction :: String -> IO String
-    firstAction action = do
-        case map toLower action of
-            "a" -> do
-                putStrLn about -- descrição do sudoku
-                menu
-            "t" -> do
-                putStrLn tutorial -- tutorial das funcoes
-                menu
-            _-> startGame
+    firstAction action = case map toLower action of
+        "a" -> do
+            putStrLn about
+            putStrLn "\nPressione Enter para voltar..."
+            _ <- getLine
+            menu
+        "t" -> do
+            putStrLn tutorial
+            putStrLn "\nPressione Enter para voltar..."
+            _ <- getLine
+            menu
+        _ -> startGame
 
     -- Atualiza o GameState
     initGame :: Board -> IO GameState
     initGame board =
         return GameState 
-        {   initialBoard = board,
-            currentBoard = board
-        }
+            {   initialBoard = board,
+                currentBoard = board
+            }
     
     -- atualiza o valor do tabuleiro atual em GameState
     updateGameState :: GameState -> Board -> GameState
@@ -77,8 +116,8 @@ module UI where
     startGame = do
         putStrLn $ 
                 "Escolha o modo de jogo:\n\t" ++
-                B.textColorYellow ++ "[1] " ++ B.resetColor ++ " Quero um modo mais confortável\n\t" ++
-                B.textColorYellow ++ "[2] " ++ B.resetColor ++ " Me desafie!"
+                textColorYellow ++ "[1] " ++ resetColor ++ " Quero um modo mais confortável\n\t" ++
+                textColorYellow ++ "[2] " ++ resetColor ++ " Me desafie!"
         mode <- Util.readUserInput "> "
         
         tabuleiro <- case mode of
@@ -98,13 +137,13 @@ module UI where
     -- Menu com opções de continuar jogando, recomeçar ou sair
     actionInGame :: GameState -> [[Char]] -> [(Int, Int)] -> IO String
     actionInGame gameState board fixedNumbers = do
-        B.printBoard (initialBoard gameState) (currentBoard gameState)
+        printBoard (initialBoard gameState) (currentBoard gameState)
         putStrLn $
-                B.textColorYellow ++ "[I] " ++ B.resetColor ++ " Inserir um número\n" ++
-                B.textColorYellow ++ "[D] " ++ B.resetColor ++ " Deletar um número\n" ++
-                B.textColorYellow ++ "[R] " ++ B.resetColor ++ " Encerrar este jogo\n" ++
-                B.textColorYellow ++ "[V] " ++ B.resetColor ++ " Verificar solução\n" ++
-                B.textColorYellow ++ "[Q] " ++ B.resetColor ++ " Sair do programa"
+                textColorYellow ++ "[I] " ++ resetColor ++ " Inserir um número\n" ++
+                textColorYellow ++ "[D] " ++ resetColor ++ " Deletar um número\n" ++
+                textColorYellow ++ "[R] " ++ resetColor ++ " Encerrar este jogo\n" ++
+                textColorYellow ++ "[V] " ++ resetColor ++ " Verificar solução\n" ++
+                textColorYellow ++ "[Q] " ++ resetColor ++ " Sair do programa"
         act <- Util.readUserInput "> "
         case map toLower act of
             "i" -> do
@@ -120,12 +159,11 @@ module UI where
             "r" -> do
                 putStrLn "Tem certeza que deseja começar de novo? y/n"
                 r <- Util.readUserInput ""
+                Util.clearScreen
                 case map toLower r of
                         ('y':_) -> do
-                            Util.clearScreen
                             menu
                         _ -> do
-                            Util.clearScreen
                             let gs = updateGameState gameState board
                             actionInGame gs board fixedNumbers
             "v" -> do
@@ -135,12 +173,11 @@ module UI where
                     putStrLn "Parabéns! Você finalizou esse SUDOKU!"
                     putStrLn "Deseja voltar ao menu? y/n"
                     r <- Util.readUserInput ""
+                    Util.clearScreen
                     case map toLower r of
                         ('y':_) -> do
-                            Util.clearScreen
                             menu
                         _ -> do
-                            Util.clearScreen
                             actionInGame gameState board fixedNumbers
                     else do
                     putStrLn "Ops... ainda tem algo errado ou faltando."
@@ -180,7 +217,6 @@ module UI where
         else do
             putStrLn "Digite a coordenada:"
             coor <- Util.readUserInput ""
-
             if not (Util.isValidCoord coor) then do
                 putStrLn "Coordenada inválida (A1 a I9)"
                 threadDelay 700000
@@ -190,35 +226,26 @@ module UI where
                     putStrLn "Essas coordenadas são imutáveis!"
                     threadDelay 700000
                     return board
+                    
                 else do
                     case (num, coor) of
                         ([n], [l, d]) ->
                             case Util.mapLetterToNumber l of
                                 Just row -> do
-                                    let baseCol = digitToInt d - 1
-                                        col
-                                            | baseCol >= 6 = baseCol + 2
-                                            | baseCol >= 3 = baseCol + 1
-                                            | otherwise    = baseCol
-
-                                    case insert n row col board of
-                                        Left erro -> do
-                                            print erro
+                                    case Util.mapDigitToColumn d of
+                                        Just col -> do
+                                            case B.insertCharOnBoard n row col board of
+                                                Left erro -> do
+                                                    print erro
+                                                    return board
+                                                Right newBoard ->
+                                                    return newBoard
+                                        Nothing -> do
+                                            putStrLn "Coordenada inválida"
                                             return board
-                                        Right newBoard ->
-                                            return newBoard
-
-                                Nothing -> do
-                                    putStrLn "Coordenada inválida"
-                                    return board
-
                         _ -> do
-                            putStrLn "Entrada inválida"
+                            putStr "Formato de entrada incorreto"
                             return board
-
-    -- Funcao auxiliar de insercao
-    insert :: Char -> Int -> Int -> B.Board -> Either B.BoardError B.Board
-    insert num row col board = B.insertCharOnBoard num row col board --AJUSTAR
 
     -- Funcao do fluxo para remover um elemento
     -- retorna IO Board para ser usado no actionInGame
@@ -238,46 +265,29 @@ module UI where
                     [l, d] ->
                         case Util.mapLetterToNumber l of
                             Just row -> do
-                                let baseCol = digitToInt d - 1
-                                    col
-                                        | baseCol >= 6 = baseCol + 2
-                                        | baseCol >= 3 = baseCol + 1
-                                        | otherwise    = baseCol
-
-                                case delete row col board of
-                                    Left erro -> do
-                                        print erro
+                                case Util.mapDigitToColumn d of
+                                    Just col -> do
+                                        case B.deleteCharFromBoard row col board of
+                                            Left erro -> do
+                                                print erro
+                                                return board
+                                            Right newBoard ->
+                                                return newBoard
+                                    Nothing -> do
+                                        putStrLn "Coordenada inválida"
                                         return board
-                                    Right newBoard ->
-                                        return newBoard
-
-                            Nothing -> do
-                                putStrLn "Coordenada inválida"
-                                return board
-
-                    _ -> do
-                        putStrLn "Entrada inválida"
-                        return board
             else do
                     putStrLn "Essas coordenadas são imutáveis!"
                     threadDelay 700000
                     return board
 
-    -- Função auxiliar de delete
-    delete :: Int -> Int -> B.Board -> Either B.BoardError B.Board
-    delete row col board = B.deleteCharFromBoard row col board
-
     -- Valida o número de entrada para estar dentro do escopo do tabuleiro 1-9
     isValidNumber :: String -> Bool
-    isValidNumber s =
-        case readMaybe s :: Maybe Int of
-            Just n  -> n >= 1 && n <= 9
-            Nothing -> False
+    isValidNumber s = s `elem` map (:[]) ['1'..'9']
 
     -- Retorna as posições preenchidas do tabuleiro
     getFilledPositions :: [[Char]] -> [(Int, Int)]
-    getFilledPositions board = [(r, c) | r <- valid, c <- valid, B.validateCoordenates r c, (board !! r !! c) /= 'x']
-        where valid = [0, 1, 2, 4, 5, 6, 8, 9, 10]
+    getFilledPositions board = [(r, c) | r <- [0..8], c <- [0..8], (board !! r !! c) /= 'x']
 
     -- retorna True se a coordenada não esrtiver na lista
     verifyCoord :: String -> [(Int, Int)] -> Bool

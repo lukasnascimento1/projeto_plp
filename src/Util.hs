@@ -27,29 +27,11 @@ module Util where
     -- Mapeia as letas A-I aos numeros 0-8, considerando as divisorias do tabuleiro (por isso não tem o 3 nem o 7)
     mapLetterToNumber :: Char -> Maybe Int
     mapLetterToNumber c =
-        case toLower c of
-        'a' -> Just 0
-        'b' -> Just 1
-        'c' -> Just 2
-        'd' -> Just 4
-        'e' -> Just 5
-        'f' -> Just 6
-        'g' -> Just 8
-        'h' -> Just 9
-        'i' -> Just 10
-        _   -> Nothing
+        let l = toLower c
+        in if l >= 'a' && l <= 'i' then Just (fromEnum l - fromEnum 'a') else Nothing
 
     -- mapeia os digitos 1-9 para as colunas corretas do tabuleiro, da matriz. Considerando as divisorias do tabuleiro (por isso não tem o 3 nem o 7)
     mapDigitToColumn ::  Char -> Maybe Int
     mapDigitToColumn d =
-        case d of
-        '1' -> Just 0
-        '2' -> Just 1
-        '3' -> Just 2
-        '4' -> Just 4
-        '5' -> Just 5
-        '6' -> Just 6
-        '7' -> Just 8
-        '8' -> Just 9
-        '9' -> Just 10
-        _   -> Nothing
+        let digits = ['1'..'9']
+        in if d `elem` digits then Just (fromEnum d - fromEnum '1') else Nothing
