@@ -134,4 +134,3 @@ module Board where
                                 = textColorWhiteWeak ++ [curC] ++ resetColor
                             | otherwise
                                 = [curC]
-

@@ -114,7 +114,3 @@ generateHard :: IO Board
 generateHard = do
     fullGame <- generateFilledBoard
     removeNumbersToGenerateGame 60 fullGame 
-
-    
-
-

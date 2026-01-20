@@ -1,8 +1,7 @@
-
-
 {-
     Interface de interação do jogo
 -}
+
 module UI where
 
     import Text.Read (readMaybe)
@@ -39,6 +38,7 @@ module UI where
 
     menu :: IO String
     menu = do
+        Util.clearScreen
         putStrLn "Pratique seu raciocínio lógico com: \n------>\tSUDOKU!\t<------"
         threadDelay 500000
         putStrLn ""
@@ -101,9 +101,9 @@ module UI where
             _ -> G.generateEasy
         
         gameState <- initGame tabuleiro
-        putStrLn "Muito bem..."
-        threadDelay 500000
-        putStrLn "Vamos lá!"
+        putStrLn "Muito bem... Vamos lá!"
+        threadDelay 1000000
+        Util.clearScreen
         let fixedNumbers = getFilledPositions tabuleiro
         actionInGame gameState tabuleiro fixedNumbers
 
@@ -119,7 +119,6 @@ module UI where
                 B.textColorYellow ++ "[R] " ++ B.resetColor ++ " Encerrar este jogo\n" ++
                 B.textColorYellow ++ "[V] " ++ B.resetColor ++ " Verificar solução\n" ++
                 B.textColorYellow ++ "[Q] " ++ B.resetColor ++ " Sair do programa"
-       
         act <- Util.readUserInput "> "
         case map toLower act of
             "i" -> do
@@ -136,21 +135,24 @@ module UI where
                 putStrLn "Tem certeza que deseja começar de novo? y/n"
                 r <- Util.readUserInput ""
                 case map toLower r of
-                        ('y':_) -> menu
+                        ('y':_) -> do
+                            Util.clearScreen
+                            menu
                         _ -> do
                             Util.clearScreen
                             let gs = updateGameState gameState board
                             actionInGame gs board fixedNumbers
-                            
             "v" -> do
                 putStrLn "Verificando solução..."
                 if V.isSolutionValid board
                     then do
                     putStrLn "Parabéns! Você finalizou esse SUDOKU!"
-                    putStrLn "Deseja começar um novo jogo? y/n"
+                    putStrLn "Deseja voltar ao menu? y/n"
                     r <- Util.readUserInput ""
                     case map toLower r of
-                        ('y':_) -> menu
+                        ('y':_) -> do
+                            Util.clearScreen
+                            menu
                         _ -> do
                             Util.clearScreen
                             actionInGame gameState board fixedNumbers
