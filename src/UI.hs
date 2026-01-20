@@ -30,18 +30,38 @@ module UI where
             ++"\nAo selecionar essas ações você precisará inserir as coordenadas da jogada ('A1', 'D7', 'I9')"
             ++"\n" ++ B.textColorYellow ++ "[V] " ++ B.resetColor ++ "Verificar solução"
             ++"\n" ++ B.textColorYellow ++ "[D] " ++ B.resetColor ++ " Restart"
-
+    
     menuInicial = B.textColorYellow ++ "[A] " ++ B.resetColor ++ " Sobre o Sudoku\n"
                 ++ B.textColorYellow ++ "[T] " ++ B.resetColor ++" Tutorial\nQualquer outra tecla inicia o jogo\n"
     finalizou = "Yeah!!! Você finalizou este SUDOKU!"
     about = "SUDOKU é um jogo de lógica em que se preenche uma grade 9×9 com números de 1 a 9, sem repetir valores em linhas, colunas e regiões 3×3."
 
+    animateSudoku :: IO ()
+    animateSudoku = mapM_ frame [1..3]
+        where
+            frame _ = do
+                putStr "\ESC[2J\ESC[H"
+                putStrLn $ B.textBold ++ B.textColorYellow ++ sudoku ++ B.resetColor
+                threadDelay 300000
+                putStr "\ESC[2J\ESC[H"
+                threadDelay 150000
+
+    sudoku :: String
+    sudoku = B.textColorYellow ++ 
+        " ██████╗ ██╗   ██╗██████╗  ██████╗ ██╗  ██╗██╗   ██╗\n\
+        \██╔════╝ ██║   ██║██╔══██╗██╔═══██╗██║ ██╔╝██║   ██║\n\
+        \╚█████╗  ██║   ██║██║  ██║██║   ██║█████╔╝ ██║   ██║\n\
+        \ ╚═══██╗ ██║   ██║██║  ██║██║   ██║██╔═██╗ ██║   ██║\n\
+        \██████╔╝ ╚██████╔╝██████╔╝╚██████╔╝██║  ██╗╚██████╔╝\n\
+        \╚═════╝   ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝ ╚═════╝"
 
     menu :: IO String
     menu = do
-        putStrLn "Pratique seu raciocínio lógico com: \n------>\tSUDOKU!\t<------"
+        putStrLn "Pratique seu raciocínio lógico com:" -- \n------>\tSUDOKU!\t<------
         threadDelay 500000
         putStrLn ""
+        animateSudoku
+        putStrLn sudoku
         putStrLn menuInicial
         action <- Util.readUserInput "> "
         firstAction action
@@ -90,8 +110,8 @@ module UI where
     startGame :: IO String
     startGame = do
         putStrLn $ 
-                "Escolha o modo de jogo:\n\t" ++
-                B.textColorYellow ++ "[1] " ++ B.resetColor ++ " Quero um modo mais confortável\n\t" ++
+                "Escolha o modo de jogo:\n" ++
+                B.textColorYellow ++ "[1] " ++ B.resetColor ++ " Quero um modo mais confortável\n" ++
                 B.textColorYellow ++ "[2] " ++ B.resetColor ++ " Me desafie!"
         mode <- Util.readUserInput "> "
         
