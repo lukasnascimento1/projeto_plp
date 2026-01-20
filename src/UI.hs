@@ -207,45 +207,27 @@ module UI where
     -- assim é possível visualizar a atualização do tabuleiro
     insertFlow :: B.Board -> [(Int, Int)] -> IO B.Board
     insertFlow board fixedNumbers = do
-        putStrLn "Digite o número: "
+        putStrLn "Digite o número (1-9): "
         num <- Util.readUserInput ""
+        putStrLn "Digite a coordenada (A1-I9):"
+        coor <- Util.readUserInput ""
 
-        if not (isValidNumber num) then do
-            putStrLn "Número inválido (1 a 9)"
-            threadDelay 700000
-            return board
-        else do
-            putStrLn "Digite a coordenada:"
-            coor <- Util.readUserInput ""
-            if not (Util.isValidCoord coor) then do
-                putStrLn "Coordenada inválida (A1 a I9)"
-                threadDelay 700000
+        case Util.validateInsert num coor fixedNumbers of
+            Left err -> do
+                case err of
+                    Util.InvalidNumber  -> putStrLn "Número inválido (1 a 9)"
+                    Util.InvalidCoord   -> putStrLn "Coordenada inválida (A1 a I9)"
+                    Util.ImmutableCoord -> putStrLn "Essa coordenada é imutável!"
+                    Util.MalformedInput -> putStrLn "Entrada inválida"
+                threadDelay 1000000
                 return board
-            else do
-                if not (verifyCoord coor fixedNumbers) then do
-                    putStrLn "Essas coordenadas são imutáveis!"
-                    threadDelay 700000
-                    return board
-                    
-                else do
-                    case (num, coor) of
-                        ([n], [l, d]) ->
-                            case Util.mapLetterToNumber l of
-                                Just row -> do
-                                    case Util.mapDigitToColumn d of
-                                        Just col -> do
-                                            case B.insertCharOnBoard n row col board of
-                                                Left erro -> do
-                                                    print erro
-                                                    return board
-                                                Right newBoard ->
-                                                    return newBoard
-                                        Nothing -> do
-                                            putStrLn "Coordenada inválida"
-                                            return board
-                        _ -> do
-                            putStr "Formato de entrada incorreto"
-                            return board
+                
+            Right (n, r, c) -> 
+                case B.insertCharOnBoard n r c board of
+                    Left _ -> do
+                        putStrLn "Erro na inserção"
+                        return board
+                    Right nb -> return nb
 
     -- Funcao do fluxo para remover um elemento
     -- retorna IO Board para ser usado no actionInGame
@@ -255,35 +237,21 @@ module UI where
         putStrLn "Digite a coordenada:"
         coor <- Util.readUserInput ""
 
-        if not (Util.isValidCoord coor) then do
-            putStrLn "Coordenada inválida (A1 a I9)"
-            threadDelay 700000
-            return board
-        else do
-            if verifyCoord coor fixedNumbers then do
-                case coor of
-                    [l, d] ->
-                        case Util.mapLetterToNumber l of
-                            Just row -> do
-                                case Util.mapDigitToColumn d of
-                                    Just col -> do
-                                        case B.deleteCharFromBoard row col board of
-                                            Left erro -> do
-                                                print erro
-                                                return board
-                                            Right newBoard ->
-                                                return newBoard
-                                    Nothing -> do
-                                        putStrLn "Coordenada inválida"
-                                        return board
-            else do
-                    putStrLn "Essas coordenadas são imutáveis!"
-                    threadDelay 700000
-                    return board
-
-    -- Valida o número de entrada para estar dentro do escopo do tabuleiro 1-9
-    isValidNumber :: String -> Bool
-    isValidNumber s = s `elem` map (:[]) ['1'..'9']
+        case Util.validateCoord coor fixedNumbers of
+            Left err -> do
+                case err of
+                    Util.InvalidCoord   -> putStrLn "Coordenada inválida (A1 a I9)"
+                    Util.ImmutableCoord -> putStrLn "Essa coordenada é imutável!"
+                    Util.MalformedInput -> putStrLn "Entrada inválida"
+                threadDelay 1000000
+                return board
+            
+            Right (row, col) -> do
+                case B.deleteCharFromBoard row col board of
+                    Left _ -> do
+                        putStrLn "Erro na exclusão"
+                        return board
+                    Right nb -> return nb
 
     -- Retorna as posições preenchidas do tabuleiro
     getFilledPositions :: [[Char]] -> [(Int, Int)]

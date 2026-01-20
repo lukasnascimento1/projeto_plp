@@ -3,6 +3,12 @@ module Util where
     import System.Console.Haskeline
     import Data.Char (toLower)
 
+    data InputError 
+        = InvalidNumber 
+            | InvalidCoord 
+            | ImmutableCoord 
+            | MalformedInput
+
     -- Autoexplicativo
     clearScreen :: IO ()
     clearScreen = putStr "\ESC[2J\ESC[H"
@@ -15,6 +21,10 @@ module Util where
             Nothing -> return ""  -- EOF
             Just line -> return line
 
+    -- Valida o número de entrada para estar dentro do escopo do tabuleiro 1-9
+    isValidNumber :: String -> Bool
+    isValidNumber s = s `elem` map (:[]) ['1'..'9']
+
     -- Valida a coordenada de entrada para estar dentro do escopo do tabuleiro
     -- A0 - I9
     isValidCoord :: String -> Bool
@@ -23,6 +33,29 @@ module Util where
         in  l' >= 'a' && l' <= 'i'
             && d  >= '1' && d  <= '9'
     isValidCoord _ = False
+
+    -- Valida se o número e coordenada que o usuário quer incluir/alterar são válidos
+    validateInsert :: String -> String -> [(Int, Int)] -> Either InputError(Char, Int, Int)
+    validateInsert num coor fixed = do
+        valor <- if isValidNumber num
+            then Right (head num)
+            else Left InvalidNumber
+        
+        (row, col) <- validateCoord coor fixed
+        return (valor, row, col)
+    
+    -- Valida se a coordenada pode ser deletada
+    validateCoord :: String -> [(Int, Int)] -> Either InputError (Int, Int)
+    validateCoord coor fixed = do
+        (l, d) <- case coor of
+            [l', d'] -> Right (l', d')
+            _ -> Left MalformedInput
+
+        row <- maybe (Left InvalidCoord) Right (Util.mapLetterToNumber l)
+        col <- maybe (Left InvalidCoord) Right (Util.mapDigitToColumn d)
+        if (row, col) `notElem` fixed
+            then Right (row, col)
+            else Left ImmutableCoord
 
     -- Mapeia as letas A-I aos numeros 0-8, considerando as divisorias do tabuleiro (por isso não tem o 3 nem o 7)
     mapLetterToNumber :: Char -> Maybe Int
