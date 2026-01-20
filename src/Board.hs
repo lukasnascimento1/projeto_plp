@@ -12,7 +12,7 @@ module Board where
 
     -- Constrói um tabuleiro vazio
     emptyBoard :: Board
-    emptyBoard = replicate 9 (replicate 9 'x')
+    emptyBoard = replicate 9 (replicate 9 '.')
 
     -- Valida as coordenadas da jogada
     -- Os parametros das funcoes são indices
@@ -38,4 +38,4 @@ module Board where
 
     -- Deleta um elemento do tabuleiro a partir das coordenadas dadas
     deleteCharFromBoard :: Int -> Int -> Board -> Either BoardError Board
-    deleteCharFromBoard row col board = insertCharOnBoard 'x' row col board
+    deleteCharFromBoard row col board = insertCharOnBoard '.' row col board
