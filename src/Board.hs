@@ -15,7 +15,10 @@ module Board where
 
     textColorWhiteWeak = "\ESC[2;37m"
     textColorGreenWeak = "\ESC[2;32m"
+    textColorBlueWeak = "\ESC[2;34m"
+    textColorCyanWeak = "\ESC[2;36m"
     textColorGreen = "\ESC[92m"
+    textColorYellow = "\ESC[93m"
     textBold = "\ESC[1m"
     resetColor = "\ESC[0m"
 
@@ -92,12 +95,12 @@ module Board where
 
 
     -- Imprime o tabuleiro formatado na tela
-    printBoard :: Board -> IO ()
-    printBoard board = do
+    printBoard :: Board -> Board -> IO ()
+    printBoard initialBoard currentBoard = do
         putStrLn cabeçalho  -- imprime a linha de cabeçalho com os numeros das colunas
         putStrLn "" -- espaçamento entre cabeçalho e tabuleiro
 
-        let tabuleiroComRodape = adicionaRotulos coordenadasX board ++ [linhaFinal]
+        let tabuleiroComRodape = adicionaRotulos coordenadasX initialBoard currentBoard ++ [linhaFinal]
         putStr (unlines tabuleiroComRodape)  -- imprime o tabuleiro com os rotulos das linhas
         where
             espaçar s = unwords (map (:[]) s)
@@ -107,21 +110,28 @@ module Board where
             separadorLargo = replicate 21 '-' --"\ESC[2;36m-\ESC[0"
             linhaFinal = textColorWhiteWeak ++ "    " ++ separadorLargo ++ resetColor
             -- Função recursiva que associa cada letra a sua respectiva linha
-            adicionaRotulos :: [Char] -> Board -> [String]
-            adicionaRotulos _ [] = []  -- caso base: quando não tem mais linhas, retorna lista vazia
-            adicionaRotulos rotulos (linha:resto)
+            adicionaRotulos :: [Char] -> Board -> Board -> [String]
+            adicionaRotulos _ [] [] = []  -- caso base: quando não tem mais linhas, retorna lista vazia
+            adicionaRotulos rotulos (linhaIni:restoIni) (linhaCur:restoCur)
                 -- Se a linha tem '-', é uma linha separadora: adiciona espaçamento e não consome letra
-                | '-' `elem` linha = (textColorWhiteWeak ++ "    " ++ separadorLargo ++ resetColor) : adicionaRotulos rotulos resto
+                | '-' `elem` linhaCur = (textColorWhiteWeak ++ "    " ++ separadorLargo ++ resetColor) : adicionaRotulos rotulos restoIni restoCur
                 -- Se não é separadora: adiciona a primeira letra + espaço + conteúdo da linha, depois continua com letras restantes
                 | otherwise = 
                     -- let linhaFormatada = espaçar linha
-                    let linhaFormatada = unwords (map (colorChar) linha)
-                    in (head rotulos : "   " ++ linhaFormatada) : adicionaRotulos (tail rotulos) resto
+                    -- let linhaFormatada = unwords (map (colorChar) linha)
+                    let linhaFormatada = unwords (zipWith colorChar linhaIni linhaCur)
+                    in (head rotulos : "   " ++ linhaFormatada) : adicionaRotulos (tail rotulos) restoIni restoCur
                     where
-                        colorChar :: Char -> String
-                        colorChar c
-                            | c `elem` ['1'..'9'] = textColorGreen ++ [c] ++ resetColor
-                            | c == 'x' = textColorGreenWeak ++ "x" ++ resetColor
-                            | c == '|' || c == '-' = textColorWhiteWeak ++ [c] ++ resetColor
-                            | otherwise = [c]
+                        colorChar :: Char -> Char -> String
+                        colorChar initC curC
+                            | curC `elem` ['1'..'9'] && initC /= 'x'
+                                = textColorCyanWeak ++ [curC] ++ resetColor      -- número original
+                            | curC `elem` ['1'..'9']
+                                = textBold ++ textColorGreen ++ [curC] ++ resetColor      -- número do usuário
+                            | curC == 'x'
+                                = textColorGreenWeak ++ "x" ++ resetColor
+                            | curC == '|' || curC == '-'
+                                = textColorWhiteWeak ++ [curC] ++ resetColor
+                            | otherwise
+                                = [curC]
 
