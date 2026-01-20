@@ -10,12 +10,12 @@ automatizados.
 
 Implementar um jogo completo de Sudoku em Haskell com:
 
--   Dois modos de jogo (fácil e difícil)\
--   Geração automática de tabuleiros\
--   Seleção e manipulação de células (A1, B3, etc.)\
--   Preencher e remover números\
--   Validação de jogadas\
--   Verificação automática da solução\
+-   Dois modos de jogo (fácil e difícil)
+-   Geração automática de tabuleiros
+-   Seleção e manipulação de células (A1, B3, etc.)
+-   Preencher e remover números
+-   Validação de jogadas
+-   Verificação automática da solução
 -   Testes unitários e de propriedade
 
 ------------------------------------------------------------------------
@@ -29,14 +29,16 @@ Implementar um jogo completo de Sudoku em Haskell com:
       GameLoop.hs
       Validation.hs
       UI.hs
+      Util.hs
 
     /tests
       BoardTests.hs
       ValidationTests.hs
       GeneratorTests.hs
+      MainTests.hs
 
     README.md
-    stack.yaml ou cabal.project
+    cabal.project
 
 ------------------------------------------------------------------------
 
@@ -51,17 +53,17 @@ Implementar um jogo completo de Sudoku em Haskell com:
 
 Para rodar o jogo através do interpretador e acessar o menu:
 
-**Inicie o REPL:**
+**Instalar Dependências e Compilar:**
 
 ```bash
-cabal repl
+cabal update
+cabal build
 ```
 
-**Dentro do GHCi, importe e inicie:**
+**Executar o Jogo:**
 
 ```bash
-import UI
-menu
+cabal run
 ```
 
 
@@ -79,30 +81,30 @@ cabal test
 
 ### ✔ Geração de tabuleiro
 
--   **Fácil**: remove menos números, múltiplos caminhos válidos\
--   **Difícil**: garante unicidade de solução e remoção mais agressiva
+-   **Fácil**: remove menos números, múltiplos caminhos válidos
+-   **Difícil**: remoção mais agressiva dos números iniciais
 
 ### ✔ Interação
 
--   Seleção de células via rótulos (A1, B3...)\
--   Preencher número\
--   Remover número\
+-   Seleção de células via rótulos (A1, B3...)
+-   Preencher número
+-   Remover número
 -   Exibir tabuleiro
 
 ### ✔ Validação
 
--   Checagem de linha, coluna e subgrade\
--   Função `isValidMove`\
+-   Checagem de linha, coluna e subgrade
+-   Função `isValidMove`
 -   Função `checkSolution`
 
 ### ✔ Interface
 
--   Modo texto simples e intuitivo via terminal\
+-   Modo texto simples e intuitivo via terminal
 -   Menu inicial para escolha do modo de jogo
 
 ### ✔ Testes
 
--   Testes unitários com HUnit\
+-   Testes unitários com HUnit
 -   Testes de propriedade com QuickCheck
 
 ------------------------------------------------------------------------
@@ -110,7 +112,7 @@ cabal test
 ## 🛠 Tecnologias
 
 -   **Haskell**
--   **Stack ou Cabal**
+-   **Cabal**
 -   **HUnit**
 -   **QuickCheck**
 
@@ -118,12 +120,11 @@ cabal test
 
 ## 👥 Equipe (exemplo)
 
--   Alana\
--   Lorena\
--   Lukas\
--   Julia\
--   Leticia
-
+-   Alana Vanessa
+-   Júlia Andrade
+-   Letícia Luna
+-   Lorena Nascimento
+-   Lukas Nascimento
 ------------------------------------------------------------------------
 
 ## 📄 Licença

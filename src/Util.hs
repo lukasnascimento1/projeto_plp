@@ -1,17 +1,20 @@
 module Util where
 
     import System.Console.Haskeline
+    import System.IO (hFlush, stdout)
     import Data.Char (toLower)
 
-    data InputError 
-        = InvalidNumber 
-            | InvalidCoord 
-            | ImmutableCoord 
+    data InputError
+        = InvalidNumber
+            | InvalidCoord
+            | ImmutableCoord
             | MalformedInput
 
     -- Autoexplicativo
     clearScreen :: IO ()
-    clearScreen = putStr "\ESC[2J\ESC[H"
+    clearScreen = do
+        putStr "\ESC[2J\ESC[3J\ESC[H"
+        hFlush stdout
 
     -- Função auxiliar para ler entrada com suporte a backspace
     readUserInput :: String -> IO String
@@ -40,10 +43,10 @@ module Util where
         valor <- if isValidNumber num
             then Right (head num)
             else Left InvalidNumber
-        
+
         (row, col) <- validateCoord coor fixed
         return (valor, row, col)
-    
+
     -- Valida se a coordenada pode ser deletada
     validateCoord :: String -> [(Int, Int)] -> Either InputError (Int, Int)
     validateCoord coor fixed = do

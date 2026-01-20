@@ -40,7 +40,7 @@ module UI where
 
     menuInicial = textColorYellow ++ "[A] " ++ resetColor ++ " Sobre o Sudoku\n"
                 ++ textColorYellow ++ "[T] " ++ resetColor ++" Tutorial\nQualquer outra tecla inicia o jogo\n"
-    
+
     about = "SUDOKU é um jogo de lógica em que se preenche uma grade 9×9 com números de 1 a 9, sem repetir valores em linhas, colunas e regiões 3×3."
 
     -- movi a lógica de impressão para o módulo de interface
@@ -53,7 +53,7 @@ module UI where
       where
         cabecalho = "\ESC[1;35m    1 2 3   4 5 6   7 8 9\ESC[0m"
         divisoria = "  +-------+-------+-------+"
-        
+
         printRow (idx, rowIni, rowCur) = do
             let letra = ['A'..'I'] !! idx
             let cells = zipWith colorCell rowIni rowCur
@@ -67,7 +67,7 @@ module UI where
 
         colorCell ini cur
             | cur == 'x' = textColorWhiteWeak ++ "x" ++ resetColor
-            | ini /= 'x' = textColorCyanWeak ++ [cur] ++ resetColor 
+            | ini /= 'x' = textColorCyanWeak ++ [cur] ++ resetColor
             | otherwise  = textBold ++ textColorGreen ++ [cur] ++ resetColor
 
     menu :: IO String
@@ -101,11 +101,11 @@ module UI where
     -- Atualiza o GameState
     initGame :: Board -> IO GameState
     initGame board =
-        return GameState 
+        return GameState
             {   initialBoard = board,
                 currentBoard = board
             }
-    
+
     -- atualiza o valor do tabuleiro atual em GameState
     updateGameState :: GameState -> Board -> GameState
     updateGameState gameState newBoard =
@@ -114,17 +114,17 @@ module UI where
     -- Inicia o modo de jogo
     startGame :: IO String
     startGame = do
-        putStrLn $ 
-                "Escolha o modo de jogo:\n\t" ++
+        putStrLn $
+                "\nEscolha o modo de jogo:\n\t" ++
                 textColorYellow ++ "[1] " ++ resetColor ++ " Quero um modo mais confortável\n\t" ++
                 textColorYellow ++ "[2] " ++ resetColor ++ " Me desafie!"
         mode <- Util.readUserInput "> "
-        
+
         tabuleiro <- case mode of
             "1" -> G.generateEasy
             "2" -> G.generateHard
             _ -> G.generateEasy
-        
+
         gameState <- initGame tabuleiro
         putStrLn "Muito bem... Vamos lá!"
         threadDelay 1000000
@@ -181,7 +181,7 @@ module UI where
                             actionInGame gameState board fixedNumbers
                     else do
                     putStrLn "Ops... ainda tem algo errado ou faltando."
-                    threadDelay 1000000
+                    threadDelay 2000000
                     Util.clearScreen
                     actionInGame gameState board fixedNumbers
             -- Nova opção: Q para sair do programa
@@ -191,7 +191,7 @@ module UI where
                 case map toLower r of
                     ('y':_) -> do
                         putStrLn "Até logo! Obrigado por jogar SUDOKU!"
-                        threadDelay 1000000  -- Aguarda 1s antes de sair
+                        threadDelay 2000000  -- Aguarda 2s antes de sair
                         -- exitSuccess  -- Encerra o programa completamente, ma não consegui fazer que não aparecesse a mensagem de exeption
                         Util.clearScreen
                         return ""
@@ -219,10 +219,10 @@ module UI where
                     Util.InvalidCoord   -> putStrLn "Coordenada inválida (A1 a I9)"
                     Util.ImmutableCoord -> putStrLn "Essa coordenada é imutável!"
                     Util.MalformedInput -> putStrLn "Entrada inválida"
-                threadDelay 1000000
+                threadDelay 2000000
                 return board
-                
-            Right (n, r, c) -> 
+
+            Right (n, r, c) ->
                 case B.insertCharOnBoard n r c board of
                     Left _ -> do
                         putStrLn "Erro na inserção"
@@ -243,9 +243,9 @@ module UI where
                     Util.InvalidCoord   -> putStrLn "Coordenada inválida (A1 a I9)"
                     Util.ImmutableCoord -> putStrLn "Essa coordenada é imutável!"
                     Util.MalformedInput -> putStrLn "Entrada inválida"
-                threadDelay 1000000
+                threadDelay 2000000
                 return board
-            
+
             Right (row, col) -> do
                 case B.deleteCharFromBoard row col board of
                     Left _ -> do
