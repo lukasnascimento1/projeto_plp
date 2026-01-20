@@ -103,8 +103,10 @@ module UI where
     menu = do
         Util.clearScreen
         -- putStrLn "Pratique seu raciocínio lógico com:" -- "\n------>\tSUDOKU!\t<------"
-        typeWriter "Pratique seu raciocínio lógico com..."
+        typeWriter 2 "Pratique seu raciocínio lógico com...\n"
         threadDelay 1000000
+        Util.clearScreen
+        typeWriter 3 $ sudoku textColorYellow
         animateSudoku textColorYellow
         putStrLn $ sudoku textColorYellowWeak
         putStrLn menuInicial
@@ -157,7 +159,7 @@ module UI where
             _ -> G.generateEasy
 
         gameState <- initGame tabuleiro
-        typeWriter "Muito bem... Vamos lá!"
+        typeWriter 1 "Muito bem... Vamos lá!"
         threadDelay 1000000
         Util.clearScreen
         let fixedNumbers = getFilledPositions tabuleiro
@@ -198,10 +200,10 @@ module UI where
                             let gs = updateGameState gameState board
                             actionInGame gs board fixedNumbers
             "v" -> do
-                typeWriter "Verificando solução...\n"
+                typeWriter 1 "Verificando solução...\n"
                 if V.isSolutionValid board
                     then do
-                    putStrLn "Parabéns! Você finalizou esse SUDOKU!"
+                    typeWriter 1 "Parabéns! Você finalizou esse..."
                     animateSudoku textColorGreen
                     putStrLn "Deseja voltar ao menu? y/n"
                     r <- Util.readUserInput ""
@@ -212,7 +214,7 @@ module UI where
                         _ -> do
                             actionInGame gameState board fixedNumbers
                     else do
-                    typeWriter $ textBold ++ textColorRed ++ "Ops... "
+                    typeWriter 1 $ textBold ++ textColorRed ++ "Ops... "
                     putStrLn "ainda tem algo errado ou faltando."
                     threadDelay 2000000
                     Util.clearScreen
@@ -300,10 +302,14 @@ module UI where
 
 
     -- Animacao de escrita na tela 
-    typeWriter :: String -> IO ()
-    typeWriter = mapM_ printChar
+    typeWriter :: Int -> String -> IO ()
+    typeWriter speed = mapM_ printChar
         where
             printChar c = do
                 putChar c
                 hFlush stdout
-                threadDelay 20000  -- 20 ms por caractere
+                case speed of
+                    1 -> threadDelay 20000  -- 20 ms por caractere
+                    2 -> threadDelay 10000  -- 10 ms por caractere
+                    3 -> threadDelay 5000  -- 5 ms por caractere
+                    _ -> threadDelay 20000  -- 20 ms por caractere
