@@ -38,7 +38,7 @@ module UI where
             ++"\n" ++ textColorYellow ++ "[D] " ++ resetColor ++ "Deletar um número"
             ++"\nAo selecionar essas ações você precisará inserir as coordenadas da jogada ('A1', 'D7', 'I9')"
             ++"\n" ++ textColorYellow ++ "[V] " ++ resetColor ++ "Verificar solução"
-            ++"\n" ++ textColorYellow ++ "[D] " ++ resetColor ++ " Restart"
+            ++"\n" ++ textColorYellow ++ "[R] " ++ resetColor ++ "Restart"
 
     menuInicial = textColorYellow ++ "[A] " ++ resetColor ++ " Sobre o Sudoku\n"
                 ++ textColorYellow ++ "[T] " ++ resetColor ++" Tutorial\nQualquer outra tecla inicia o jogo\n"
@@ -290,7 +290,7 @@ module UI where
 
     -- Retorna as posições preenchidas do tabuleiro
     getFilledPositions :: [[Char]] -> [(Int, Int)]
-    getFilledPositions board = [(r, c) | r <- [0..8], c <- [0..8], (board !! r !! c) /= 'x']
+    getFilledPositions board = [(r, c) | r <- [0..8], c <- [0..8], (board !! r !! c) /= '.']
 
     -- retorna True se a coordenada não esrtiver na lista
     verifyCoord :: String -> [(Int, Int)] -> Bool
