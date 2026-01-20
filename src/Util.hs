@@ -3,6 +3,12 @@ module Util where
     import System.Console.Haskeline
     import Data.Char (toLower)
 
+    data InputError 
+        = InvalidNumber 
+            | InvalidCoord 
+            | ImmutableCoord 
+            | MalformedInput
+
     -- Autoexplicativo
     clearScreen :: IO ()
     clearScreen = putStr "\ESC[2J\ESC[H"
@@ -15,6 +21,10 @@ module Util where
             Nothing -> return ""  -- EOF
             Just line -> return line
 
+    -- Valida o número de entrada para estar dentro do escopo do tabuleiro 1-9
+    isValidNumber :: String -> Bool
+    isValidNumber s = s `elem` map (:[]) ['1'..'9']
+
     -- Valida a coordenada de entrada para estar dentro do escopo do tabuleiro
     -- A0 - I9
     isValidCoord :: String -> Bool
@@ -24,32 +34,37 @@ module Util where
             && d  >= '1' && d  <= '9'
     isValidCoord _ = False
 
+    -- Valida se o número e coordenada que o usuário quer incluir/alterar são válidos
+    validateInsert :: String -> String -> [(Int, Int)] -> Either InputError(Char, Int, Int)
+    validateInsert num coor fixed = do
+        valor <- if isValidNumber num
+            then Right (head num)
+            else Left InvalidNumber
+        
+        (row, col) <- validateCoord coor fixed
+        return (valor, row, col)
+    
+    -- Valida se a coordenada pode ser deletada
+    validateCoord :: String -> [(Int, Int)] -> Either InputError (Int, Int)
+    validateCoord coor fixed = do
+        (l, d) <- case coor of
+            [l', d'] -> Right (l', d')
+            _ -> Left MalformedInput
+
+        row <- maybe (Left InvalidCoord) Right (Util.mapLetterToNumber l)
+        col <- maybe (Left InvalidCoord) Right (Util.mapDigitToColumn d)
+        if (row, col) `notElem` fixed
+            then Right (row, col)
+            else Left ImmutableCoord
+
     -- Mapeia as letas A-I aos numeros 0-8, considerando as divisorias do tabuleiro (por isso não tem o 3 nem o 7)
     mapLetterToNumber :: Char -> Maybe Int
     mapLetterToNumber c =
-        case toLower c of
-        'a' -> Just 0
-        'b' -> Just 1
-        'c' -> Just 2
-        'd' -> Just 4
-        'e' -> Just 5
-        'f' -> Just 6
-        'g' -> Just 8
-        'h' -> Just 9
-        'i' -> Just 10
-        _   -> Nothing
+        let l = toLower c
+        in if l >= 'a' && l <= 'i' then Just (fromEnum l - fromEnum 'a') else Nothing
 
     -- mapeia os digitos 1-9 para as colunas corretas do tabuleiro, da matriz. Considerando as divisorias do tabuleiro (por isso não tem o 3 nem o 7)
     mapDigitToColumn ::  Char -> Maybe Int
     mapDigitToColumn d =
-        case d of
-        '1' -> Just 0
-        '2' -> Just 1
-        '3' -> Just 2
-        '4' -> Just 4
-        '5' -> Just 5
-        '6' -> Just 6
-        '7' -> Just 8
-        '8' -> Just 9
-        '9' -> Just 10
-        _   -> Nothing
+        let digits = ['1'..'9']
+        in if d `elem` digits then Just (fromEnum d - fromEnum '1') else Nothing

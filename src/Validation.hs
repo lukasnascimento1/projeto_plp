@@ -15,18 +15,16 @@ isSequenceValid sequence = sort (filter (`elem` ['1'..'9']) sequence ) == "12345
 
 -- verifica se todas as linhas formam uma sequência válida
 areAllRowsValid :: Board -> Bool
-areAllRowsValid board = all (\r -> isSequenceValid (getRowFromBoard r board)) validIndices
-    where validIndices = [ 0, 1, 2, 4, 5, 6, 8, 9, 10 ]
+areAllRowsValid board = all (\r -> isSequenceValid (getRowFromBoard r board)) [0..8]
 
 -- verifica se todas as colunas formam uma sequência válida
 areAllColumnsValid :: Board -> Bool
-areAllColumnsValid board = all (\c -> isSequenceValid (getColumn c board)) validIndices
-    where validIndices = [ 0, 1, 2, 4, 5, 6, 8, 9, 10 ]
+areAllColumnsValid board = all (\c -> isSequenceValid (getColumn c board)) [0..8]
 
 -- verifica se todas as submatrizes 3x3 formam uma sequência válida
 areAllBoxesValid :: Board -> Bool
 areAllBoxesValid board = all (\(r, c) -> isSequenceValid (getBox r c board)) startingPoints
-    where startingPoints = [ (r, c) | r <- [0, 4, 8], c <- [0, 4, 8] ]
+    where startingPoints = [ (r, c) | r <- [0, 3, 6], c <- [0, 3, 6] ]
 
 -- verifica se a solução cumpre os requisitos: todas as linhas, colunas e submatrizes formam sequências válidas
 isSolutionValid :: Board -> Bool
