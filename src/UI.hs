@@ -63,7 +63,7 @@ module UI where
         mapM_ printRow (zip3 [0..8] initial current)
 
       where
-        cabecalho = "\ESC[1;35m    1 2 3   4 5 6   7 8 9\ESC[0m"
+        cabecalho = textBold ++ "\ESC[1;35m    1 2 3   4 5 6   7 8 9\ESC[0m"
         divisoria = "  +-------+-------+-------+"
 
         printRow (idx, rowIni, rowCur) = do
@@ -72,14 +72,14 @@ module UI where
             let p1 = unwords (take 3 cells)
             let p2 = unwords (take 3 (drop 3 cells))
             let p3 = unwords (take 3 (drop 6 cells))
-            putStrLn $ [letra] ++ " | " ++ p1 ++ " | " ++ p2 ++ " | " ++ p3 ++ " |"
+            putStrLn $ textBold ++ "\ESC[1;35m" ++[letra] ++ resetColor ++ " | " ++ p1 ++ " | " ++ p2 ++ " | " ++ p3 ++ " |"
             if idx `elem` [2, 5, 8]
                 then putStrLn divisoria
                 else return ()
 
         colorCell ini cur
-            | cur == 'x' = textColorWhiteWeak ++ "x" ++ resetColor
-            | ini /= 'x' = textColorCyanWeak ++ [cur] ++ resetColor
+            | cur == '.' = textColorWhiteWeak ++ "." ++ resetColor
+            | ini /= '.' = textColorCyanWeak ++ [cur] ++ resetColor
             | otherwise  = textBold ++ textColorGreen ++ [cur] ++ resetColor
 
     
@@ -172,11 +172,11 @@ module UI where
     actionInGame gameState board fixedNumbers = do
         printBoard (initialBoard gameState) (currentBoard gameState)
         putStrLn $
-                textColorYellow ++ "[I] " ++ resetColor ++ " Inserir um número\n" ++
-                textColorYellow ++ "[D] " ++ resetColor ++ " Deletar um número\n" ++
-                textColorYellow ++ "[R] " ++ resetColor ++ " Encerrar este jogo\n" ++
-                textColorYellow ++ "[V] " ++ resetColor ++ " Verificar solução\n" ++
-                textColorYellow ++ "[Q] " ++ resetColor ++ " Sair do programa"
+                textColorYellow ++ "[I] " ++ resetColor ++ "Inserir\t" ++
+                textColorYellow ++ "[D] " ++ resetColor ++ "Deletar\n" ++
+                textColorYellow ++ "[R] " ++ resetColor ++ "Encerrar\t" ++
+                textColorYellow ++ "[V] " ++ resetColor ++ "Verificar\n" ++
+                textColorYellow ++ "[Q] " ++ resetColor ++ "Sair"
         act <- Util.readUserInput "> "
         case map toLower act of
             "i" -> do
@@ -313,3 +313,18 @@ module UI where
                     2 -> threadDelay 10000  -- 10 ms por caractere
                     3 -> threadDelay 5000  -- 5 ms por caractere
                     _ -> threadDelay 20000  -- 20 ms por caractere
+    
+    drawFrame :: Int -> [String] -> IO ()
+    drawFrame width content = do
+        putStrLn $ "┌" ++ replicate width '─' ++ "┐"
+        mapM_ drawLine content
+        putStrLn $ "└" ++ replicate width '─' ++ "┘"
+        where
+            drawLine s =
+                putStrLn $ "│" ++ pad width s ++ "│"
+
+            pad w s =
+                let space = w - length s
+                    left  = space `div` 2
+                    right = space - left
+                in replicate left ' ' ++ s ++ replicate right ' '
