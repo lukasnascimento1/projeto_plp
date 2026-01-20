@@ -20,6 +20,7 @@ module UI where
     textColorBlueWeak = "\ESC[2;34m"
     textColorCyanWeak = "\ESC[2;36m"
     textColorYellowWeak = "\ESC[2;93m"
+    textColorCyan = "\ESC[36m"
     textColorRed = "\ESC[31m"
     textColorGreen = "\ESC[92m"
     textColorYellow = "\ESC[93m"
@@ -79,7 +80,7 @@ module UI where
 
         colorCell ini cur
             | cur == '.' = textColorWhiteWeak ++ "." ++ resetColor
-            | ini /= '.' = textColorCyanWeak ++ [cur] ++ resetColor
+            | ini /= '.' = textColorCyan ++ [cur] ++ resetColor
             | otherwise  = textBold ++ textColorGreen ++ [cur] ++ resetColor
 
     
