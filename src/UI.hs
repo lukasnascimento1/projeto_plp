@@ -19,6 +19,8 @@ module UI where
     textColorGreenWeak = "\ESC[2;32m"
     textColorBlueWeak = "\ESC[2;34m"
     textColorCyanWeak = "\ESC[2;36m"
+    textColorYellowWeak = "\ESC[2;93m"
+    textColorRed = "\ESC[31m"
     textColorGreen = "\ESC[92m"
     textColorYellow = "\ESC[93m"
     textBold = "\ESC[1m"
@@ -42,6 +44,16 @@ module UI where
                 ++ textColorYellow ++ "[T] " ++ resetColor ++" Tutorial\nQualquer outra tecla inicia o jogo\n"
 
     about = "SUDOKU é um jogo de lógica em que se preenche uma grade 9×9 com números de 1 a 9, sem repetir valores em linhas, colunas e regiões 3×3."
+
+    sudoku :: [Char] -> String
+    sudoku color = color ++ 
+        " ██████╗ ██╗   ██╗██████╗  ██████╗ ██╗  ██╗██╗   ██╗\n\
+        \██╔════╝ ██║   ██║██╔══██╗██╔═══██╗██║ ██╔╝██║   ██║\n\
+        \╚█████╗  ██║   ██║██║  ██║██║   ██║█████╔╝ ██║   ██║\n\
+        \ ╚═══██╗ ██║   ██║██║  ██║██║   ██║██╔═██╗ ██║   ██║\n\
+        \██████╔╝ ╚██████╔╝██████╔╝╚██████╔╝██║  ██╗╚██████╔╝\n\
+        \╚═════╝   ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝ ╚═════╝"
+        ++ resetColor
 
     -- movi a lógica de impressão para o módulo de interface
     printBoard :: Board -> Board -> IO ()
@@ -70,12 +82,31 @@ module UI where
             | ini /= 'x' = textColorCyanWeak ++ [cur] ++ resetColor
             | otherwise  = textBold ++ textColorGreen ++ [cur] ++ resetColor
 
+    
+    animateSudoku :: String -> IO ()
+    animateSudoku color = mapM_ frame [1..3]
+        where
+            frame _ = do
+                -- frame ON
+                putStr "\ESC[2J\ESC[H"
+                putStrLn $ textBold ++ sudoku color ++ resetColor
+                hFlush stdout
+                threadDelay 300000
+
+                -- frame OFF
+                putStr "\ESC[2J\ESC[H"
+                hFlush stdout
+                threadDelay 150000
+
+
     menu :: IO String
     menu = do
         Util.clearScreen
-        putStrLn "Pratique seu raciocínio lógico com:\n------>\tSUDOKU!\t<------"
-        threadDelay 500000
-        putStrLn ""
+        -- putStrLn "Pratique seu raciocínio lógico com:" -- "\n------>\tSUDOKU!\t<------"
+        typeWriter "Pratique seu raciocínio lógico com..."
+        threadDelay 1000000
+        animateSudoku textColorYellow
+        putStrLn $ sudoku textColorYellowWeak
         putStrLn menuInicial
         action <- Util.readUserInput "> "
         firstAction action
@@ -115,8 +146,8 @@ module UI where
     startGame :: IO String
     startGame = do
         putStrLn $
-                "\nEscolha o modo de jogo:\n\t" ++
-                textColorYellow ++ "[1] " ++ resetColor ++ " Quero um modo mais confortável\n\t" ++
+                "\nEscolha o modo de jogo:\n" ++
+                textColorYellow ++ "[1] " ++ resetColor ++ " Quero um modo mais confortável\n" ++
                 textColorYellow ++ "[2] " ++ resetColor ++ " Me desafie!"
         mode <- Util.readUserInput "> "
 
@@ -126,7 +157,7 @@ module UI where
             _ -> G.generateEasy
 
         gameState <- initGame tabuleiro
-        putStrLn "Muito bem... Vamos lá!"
+        typeWriter "Muito bem... Vamos lá!"
         threadDelay 1000000
         Util.clearScreen
         let fixedNumbers = getFilledPositions tabuleiro
@@ -167,10 +198,11 @@ module UI where
                             let gs = updateGameState gameState board
                             actionInGame gs board fixedNumbers
             "v" -> do
-                putStrLn "Verificando solução..."
+                typeWriter "Verificando solução...\n"
                 if V.isSolutionValid board
                     then do
                     putStrLn "Parabéns! Você finalizou esse SUDOKU!"
+                    animateSudoku textColorGreen
                     putStrLn "Deseja voltar ao menu? y/n"
                     r <- Util.readUserInput ""
                     Util.clearScreen
@@ -180,7 +212,8 @@ module UI where
                         _ -> do
                             actionInGame gameState board fixedNumbers
                     else do
-                    putStrLn "Ops... ainda tem algo errado ou faltando."
+                    typeWriter $ textBold ++ textColorRed ++ "Ops... "
+                    putStrLn "ainda tem algo errado ou faltando."
                     threadDelay 2000000
                     Util.clearScreen
                     actionInGame gameState board fixedNumbers
@@ -264,3 +297,13 @@ module UI where
             (Just r, Just c) -> (r, c) `notElem` listCoord
             _ -> False
     verifyCoord _ _ = False
+
+
+    -- Animacao de escrita na tela 
+    typeWriter :: String -> IO ()
+    typeWriter = mapM_ printChar
+        where
+            printChar c = do
+                putChar c
+                hFlush stdout
+                threadDelay 20000  -- 20 ms por caractere
