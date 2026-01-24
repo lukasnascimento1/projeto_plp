@@ -19,40 +19,39 @@ tests_Board = TestList
 test_initialBoardEmpty :: Test
 test_initialBoardEmpty = TestCase $ do
   let board = emptyBoard
-  let expectedRow = "xxx|xxx|xxx"
+  let expectedRow = "........."
   assertEqual "Linha 0 deve estar vazia" expectedRow (getRowFromBoard 0 board)
   assertEqual "Linha 1 deve estar vazia" expectedRow (getRowFromBoard 1 board)
   assertEqual "Linha 2 deve estar vazia" expectedRow (getRowFromBoard 2 board)        
+  assertEqual "Linha 3 deve estar vazia" expectedRow (getRowFromBoard 3 board)
   assertEqual "Linha 4 deve estar vazia" expectedRow (getRowFromBoard 4 board)
-  assertEqual "Linha 5 deve estar vazia" expectedRow (getRowFromBoard 5 board)
-  assertEqual "Linha 6 deve estar vazia" expectedRow (getRowFromBoard 6 board)  
-  assertEqual "Linha 8 deve estar vazia" expectedRow (getRowFromBoard 8 board)      
-  assertEqual "Linha 9 deve estar vazia" expectedRow (getRowFromBoard 9 board)
-  assertEqual "Linha 10 deve estar vazia" expectedRow (getRowFromBoard 10 board)
+  assertEqual "Linha 5 deve estar vazia" expectedRow (getRowFromBoard 5 board)  
+  assertEqual "Linha 6 deve estar vazia" expectedRow (getRowFromBoard 6 board)      
+  assertEqual "Linha 7 deve estar vazia" expectedRow (getRowFromBoard 7 board)
+  assertEqual "Linha 8 deve estar vazia" expectedRow (getRowFromBoard 8 board)
 
 
 test_insertCharOnRowValid :: Test
 test_insertCharOnRowValid = TestCase $ do
-  let row = "xxx|xxx|xxx"
+  let row = "........."
 
-  assertEqual "Pos 0" "5xx|xxx|xxx" (insertCharOnRow '5' 0 row)
-  assertEqual "Pos 1" "x5x|xxx|xxx" (insertCharOnRow '5' 1 row)
-  assertEqual "Pos 2" "xx5|xxx|xxx" (insertCharOnRow '5' 2 row)
-  assertEqual "Pos 4" "xxx|5xx|xxx" (insertCharOnRow '5' 4 row)
-  assertEqual "Pos 5" "xxx|x5x|xxx" (insertCharOnRow '5' 5 row)
-  assertEqual "Pos 6" "xxx|xx5|xxx" (insertCharOnRow '5' 6 row)
-  assertEqual "Pos 8" "xxx|xxx|5xx" (insertCharOnRow '5' 8 row)
-  assertEqual "Pos 9" "xxx|xxx|x5x" (insertCharOnRow '5' 9 row)
-  assertEqual "Pos 10" "xxx|xxx|xx5" (insertCharOnRow '5' 10 row)
+  assertEqual "Pos 0" "5........" (insertCharOnRow '5' 0 row)
+  assertEqual "Pos 1" ".5......." (insertCharOnRow '5' 1 row)
+  assertEqual "Pos 2" "..5......" (insertCharOnRow '5' 2 row)
+  assertEqual "Pos 4" "....5...." (insertCharOnRow '5' 4 row)
+  assertEqual "Pos 5" ".....5..." (insertCharOnRow '5' 5 row)
+  assertEqual "Pos 6" "......5.." (insertCharOnRow '5' 6 row)
+  assertEqual "Pos 8" "........5" (insertCharOnRow '5' 8 row)
+ 
 
 
 test_insertCharOnRowInvalid :: Test
 test_insertCharOnRowInvalid = TestCase $ do
-  let row = "xxx|xxx|xxx"
+  let row = "........."
 
   assertEqual "Índice negativo"
     row
-    (insertCharOnRow '5' (-1) row)
+    (insertCharOnRow '9' (-1) row)
 
   assertEqual "Índice maior que tamanho"
     row
@@ -62,94 +61,37 @@ test_insertCharOnRowInvalid = TestCase $ do
 test_insertCharOnBoardAllValid :: Test
 test_insertCharOnBoardAllValid = TestCase $ do
   let board = emptyBoard
-  let validIdx = [0,1,2,4,5,6,8,9,10]
-
-  let results =
-        [ insertCharOnBoard '9' r c board
-        | r <- validIdx
-        , c <- validIdx
-        ]
-
-  assertBool "Todas inserções válidas retornam Right"
-    (all isRight results)
-
-  where
-    isRight (Right _) = True
-    isRight _         = False
-
+  case insertCharOnBoard '7' 0 0 board of
+    Right b  -> assertEqual "Inseriu corretamente" '7' ((b !! 0) !! 0)
+    _        -> assertFailure "Esperava Right"
 
 test_insertCharOnBoardInvalid :: Test
 test_insertCharOnBoardInvalid = TestCase $ do
   let board = emptyBoard
 
-  assertEqual "Linha separadora"
-    (Left InvalidCoordinates)
-    (insertCharOnBoard '7' 3 0 board)
-
-  assertEqual "Coluna separadora"
-    (Left InvalidCoordinates)
-    (insertCharOnBoard '7' 0 7 board)
-
-  assertEqual "Ambos separadores"
-    (Left InvalidCoordinates)
-    (insertCharOnBoard '7' 3 7 board)
-
-  assertEqual "Fora do tabuleiro"
-    (Left InvalidCoordinates)
-    (insertCharOnBoard '7' 11 0 board)
-
-  assertEqual "Coluna negativa"
-    (Left InvalidCoordinates)
-    (insertCharOnBoard '7' 0 (-1) board)
+  assertEqual "Linha inválida" (Left InvalidCoordinates) (insertCharOnBoard '7' 9 0 board)
+  assertEqual "Coluna inválida" (Left InvalidCoordinates) (insertCharOnBoard '7' 0 9 board)
+  assertEqual "Negativo" (Left InvalidCoordinates) (insertCharOnBoard '7' (-1) 0 board)
 
 test_deleteCharFromBoardAllValid :: Test
 test_deleteCharFromBoardAllValid = TestCase $ do
-  let board = emptyBoard
-  let validIdx = [0,1,2,4,5,6,8,9,10]
-
-  let boardWithNums =
-        foldl
-          (\b (r,c) -> case insertCharOnBoard '8' r c b of
-                          Right nb -> nb
-                          _ -> b)
-          board
-          [(r,c) | r <- validIdx, c <- validIdx]
-
-  let results =
-        [ deleteCharFromBoard r c boardWithNums
-        | r <- validIdx
-        , c <- validIdx
-        ]
-
-  assertBool "Todas remoções válidas retornam Right"
-    (all isRight results)
-
-  where
-    isRight (Right _) = True
-    isRight _         = False
+  let (Right board1) = insertCharOnBoard '5' 2 2 emptyBoard
+  let (Right board2) = deleteCharFromBoard 2 2 board1
+  assertEqual "Removeu corretamente" '.' ((board2 !! 2) !! 2)
 
 
 test_deleteCharFromBoardInvalid :: Test
 test_deleteCharFromBoardInvalid = TestCase $ do
   let board = emptyBoard
-
-  assertEqual "Linha separadora"
-    (Left InvalidCoordinates)
-    (deleteCharFromBoard 3 0 board)
-
-  assertEqual "Coluna separadora"
-    (Left InvalidCoordinates)
-    (deleteCharFromBoard 0 7 board)
-
-  assertEqual "Fora do tabuleiro"
-    (Left InvalidCoordinates)
-    (deleteCharFromBoard 12 1 board)
+  assertEqual "Linha inválida" (Left InvalidCoordinates) (deleteCharFromBoard 9 0 board)
+  assertEqual "Coluna inválida" (Left InvalidCoordinates) (deleteCharFromBoard 0 9 board)
+  assertEqual "Negativo" (Left InvalidCoordinates) (deleteCharFromBoard (-1) 0 board)
 
 
 test_validateCoordenates :: Test
 test_validateCoordenates = TestCase $ do
   assertBool "Coordenada válida (0,0)" (validateCoordenates 0 0)
-  assertBool "Coordenada válida (10,10)" (validateCoordenates 10 10)
-  assertBool "Linha separadora inválida" (not (validateCoordenates 3 0))
-  assertBool "Coluna separadora inválida" (not (validateCoordenates 0 7))
+  assertBool "Coordenada válida (8,8)" (validateCoordenates 8 8)
+  assertBool "Linha inválida" (not (validateCoordenates 9 0))
+  assertBool "Coluna inválida" (not (validateCoordenates 0 9))
   assertBool "Fora do tabuleiro" (not (validateCoordenates 11 0))

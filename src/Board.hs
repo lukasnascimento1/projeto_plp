@@ -21,7 +21,10 @@ module Board where
 
     -- Adiciona um elemento do tipo Char na linha do tabuleiro
     insertCharOnRow :: Char -> Int -> [Char] -> [Char]
-    insertCharOnRow num ind row = take ind row ++ [num] ++ drop (ind + 1) row
+    insertCharOnRow num ind row
+        | ind < 0 || ind >= length row = row
+        | otherwise = take ind row ++ [num] ++ drop (ind + 1) row
+
 
     -- Insere um elemento do tipo Char no tabuleiro
     insertCharOnBoard :: Char -> Int -> Int -> Board -> Either BoardError Board
