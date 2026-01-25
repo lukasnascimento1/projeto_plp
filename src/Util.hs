@@ -1,3 +1,7 @@
+{-
+    Módulo responsável por utilitários gerais do programa, como leitura de entrada
+    e validação de dados.
+-}
 module Util where
 
     import System.Console.Haskeline
@@ -60,13 +64,13 @@ module Util where
             then Right (row, col)
             else Left ImmutableCoord
 
-    -- Mapeia as letas A-I aos numeros 0-8, considerando as divisorias do tabuleiro (por isso não tem o 3 nem o 7)
+    -- Mapeia as letas A-I aos numeros 0-8.
     mapLetterToNumber :: Char -> Maybe Int
     mapLetterToNumber c =
         let l = toLower c
         in if l >= 'a' && l <= 'i' then Just (fromEnum l - fromEnum 'a') else Nothing
 
-    -- mapeia os digitos 1-9 para as colunas corretas do tabuleiro, da matriz. Considerando as divisorias do tabuleiro (por isso não tem o 3 nem o 7)
+    -- mapeia os digitos 1-9 para as colunas corretas do tabuleiro, da matriz.
     mapDigitToColumn ::  Char -> Maybe Int
     mapDigitToColumn d =
         let digits = ['1'..'9']

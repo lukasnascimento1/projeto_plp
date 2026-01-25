@@ -1,3 +1,6 @@
+{-
+    Módulo responsável por gerar os tabuleiros de Sudoku de acordo com a dificuldade escolhida.
+-}
 module Generator where
 
 import Board (insertCharOnBoard, Board, emptyBoard, getRowFromBoard, validateCoordenates, deleteCharFromBoard)

@@ -9,7 +9,6 @@ library
       Generator
       UI
       Validation
-      GameLoop
       Util
       Main
   build-depends:
@@ -28,7 +27,6 @@ executable projeto-plp
       UI
       Validation
       Util
-      GameLoop
   build-depends:
       base >=4.14 && <5,
       random,
@@ -39,7 +37,7 @@ executable projeto-plp
 
 test-suite sudoku-test
   type: exitcode-stdio-1.0
-  hs-source-dirs: tests 
+  hs-source-dirs: tests
   main-is: MainTest.hs
   other-modules:
     BoardTests

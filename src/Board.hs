@@ -1,6 +1,6 @@
 {-
-    Tabuleiro do Sudoku é uma matriz 9x9
-    Funções de Inserir e Remover elementos no tabuleiro
+    Modulo responsável por construir o Tabuleiro do Sudoku, que é uma matriz 9x9
+    Funções de Inserir e Remover elementos no tabuleiro e validação de coordenadas.
 -}
 
 module Board where

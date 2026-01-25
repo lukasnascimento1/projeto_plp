@@ -1,5 +1,6 @@
 {-
-    Interface de interação do jogo
+    Interface de interação do jogo com o usuário. Responsável por exibir o tabuleiro,
+    ler entradas e gerenciar o fluxo do jogo.
 -}
 
 module UI where
@@ -47,7 +48,7 @@ module UI where
     about = "SUDOKU é um jogo de lógica em que se preenche uma grade 9×9 com números de 1 a 9, sem repetir valores em linhas, colunas e regiões 3×3."
 
     sudoku :: [Char] -> String
-    sudoku color = color ++ 
+    sudoku color = color ++
         " ██████╗ ██╗   ██╗██████╗  ██████╗ ██╗  ██╗██╗   ██╗\n\
         \██╔════╝ ██║   ██║██╔══██╗██╔═══██╗██║ ██╔╝██║   ██║\n\
         \╚█████╗  ██║   ██║██║  ██║██║   ██║█████╔╝ ██║   ██║\n\
@@ -83,7 +84,7 @@ module UI where
             | ini /= '.' = textColorCyan ++ [cur] ++ resetColor
             | otherwise  = textBold ++ textColorGreen ++ [cur] ++ resetColor
 
-    
+
     animateSudoku :: String -> IO ()
     animateSudoku color = mapM_ frame [1..3]
         where
@@ -103,7 +104,6 @@ module UI where
     menu :: IO String
     menu = do
         Util.clearScreen
-        -- putStrLn "Pratique seu raciocínio lógico com:" -- "\n------>\tSUDOKU!\t<------"
         typeWriter 2 "Pratique seu raciocínio lógico com...\n"
         threadDelay 1000000
         Util.clearScreen
@@ -220,7 +220,6 @@ module UI where
                     threadDelay 2000000
                     Util.clearScreen
                     actionInGame gameState board fixedNumbers
-            -- Nova opção: Q para sair do programa
             "q" -> do
                 putStrLn "Tem certeza que deseja sair do programa? y/n"
                 r <- Util.readUserInput ""
@@ -228,7 +227,6 @@ module UI where
                     ('y':_) -> do
                         putStrLn "Até logo! Obrigado por jogar SUDOKU!"
                         threadDelay 2000000  -- Aguarda 2s antes de sair
-                        -- exitSuccess  -- Encerra o programa completamente, ma não consegui fazer que não aparecesse a mensagem de exeption
                         Util.clearScreen
                         return ""
                     _ -> do
@@ -302,7 +300,7 @@ module UI where
     verifyCoord _ _ = False
 
 
-    -- Animacao de escrita na tela 
+    -- Animacao de escrita na tela
     typeWriter :: Int -> String -> IO ()
     typeWriter speed = mapM_ printChar
         where
@@ -314,7 +312,7 @@ module UI where
                     2 -> threadDelay 10000  -- 10 ms por caractere
                     3 -> threadDelay 5000  -- 5 ms por caractere
                     _ -> threadDelay 20000  -- 20 ms por caractere
-    
+
     drawFrame :: Int -> [String] -> IO ()
     drawFrame width content = do
         putStrLn $ "┌" ++ replicate width '─' ++ "┐"
