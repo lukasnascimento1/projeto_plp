@@ -26,7 +26,6 @@ Implementar um jogo completo de Sudoku em Haskell com:
       Main.hs
       Board.hs
       Generator.hs
-      GameLoop.hs
       Validation.hs
       UI.hs
       Util.hs
@@ -104,8 +103,8 @@ cabal test
 
 ### ✔ Testes
 
--   Testes unitários com HUnit
--   Testes de propriedade com QuickCheck
+-   Testes unitários
+-   Testes de propriedade
 
 ------------------------------------------------------------------------
 
